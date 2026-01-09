@@ -35,8 +35,14 @@ function App() {
 
         <div>
           <p>Serviços por Lavador:</p>
-
         </div>
+      </div>
+
+      <div className='pages'>
+        <a href="">Lavadores</a>
+        <a href="">Clientes</a>
+        <a href="">Estacionamento</a>
+        <a href="">Receitas</a>
       </div>
     </>
   )
