@@ -1,50 +1,61 @@
 import './App.css'
+import { VscAccount } from 'react-icons/vsc'
+import { GrCar, GrGroup, GrLineChart } from "react-icons/gr";
+import {Lavadores} from './pages/lavadores';
+import { Routes, Route, Link } from 'react-router-dom'
+import { Clientes } from './pages/clientes';
+import { Estacionamento } from './pages/estacionamento';
+import { Receita } from './pages/receita';  
 
 function App() {
-
   return (
-    <>
-      <h1>Lava Jato</h1>
+    <Routes>
+      <Route path="/lavadores" element={<Lavadores />} />
+      <Route path="/clientes" element={<Clientes />} />
+      <Route path="/estacionamento" element={<Estacionamento />} />
+      <Route path="/receita" element={<Receita />} />
+      <Route path="/" element={
+        <>
+          <h1>Lava Jato</h1>
 
-      <div>
-        <div className='receitadiaria'>
-          <p>Total do dia $</p>
+          <div>
+            <div className='receitadiaria'>
+              <h2>Total do dia</h2>
 
-          <p>Lavagens:</p>
-          <p>Estacionamento:</p>
-        </div>
+              <p>Lavagens:</p>
+              <p>Estacionamento </p>
+            </div>
 
-        <div className='receitamensal'>
-          <p>Receita mensal:</p>
-        </div>
+            <div className='receitamensal'>
+              <h2>Receita mensal</h2>
+            </div>
 
-        <div>
-          <p>Serviços pendentes:</p>
-        </div>
+            <div className='pendencias'>
+              <h2>Pendências</h2>
+            </div>
 
-        <div>
-          <p>Lucro líquido:</p>
+            <div className='lucro liquido'>
+              <h2>Lucro líquido</h2>
 
-          <p>Despesas:</p>
-          <p>Receita total:</p>
-        </div>
+              <p>Despesas</p>
+              <p>Receita total:</p>
+            </div>
 
-        <div>
-          <p>Lavadores ativos:</p>
-        </div>
+            <div className='servicosporlavador'>
+              <h2>
+                Serviços por lavador</h2>
+            </div>
+          </div>
 
-        <div>
-          <p>Serviços por Lavador:</p>
-        </div>
-      </div>
-
-      <div className='pages'>
-        <a href="">Lavadores</a>
-        <a href="">Clientes</a>
-        <a href="">Estacionamento</a>
-        <a href="">Receitas</a>
-      </div>
-    </>
+          <div className='pages'>
+            <Link to="/lavadores"><GrGroup/></Link>
+            <Link to="/clientes"><VscAccount /></Link>
+            <Link to="/estacionamento"><GrCar /></Link>
+            <Link to="/receita"><GrLineChart /></Link>
+          </div>
+        </>
+      } />
+    </Routes>
   )
 }
 
