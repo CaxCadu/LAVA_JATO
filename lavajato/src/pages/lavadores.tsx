@@ -1,65 +1,107 @@
+import { useEffect, useState } from 'react'
 import '../App.css'
+import '../styles/forms.css'
 import { VscAccount } from 'react-icons/vsc'
 import { GrCar, GrGroup, GrLineChart } from 'react-icons/gr'
 import { Routes, Route, Link } from 'react-router-dom'
 import { Clientes } from './clientes'
 import { Estacionamento } from './estacionamento'
 import { Receita } from './receita'
+import { Navbar } from '../components/Navbar'
+import { supabase } from '../services/supabaseClient'
+
+interface Lavador {
+  id: number
+  nome: string
+  telefone?: string
+}
 
 export function Lavadores() {
+  const [nome, setNome] = useState('')
+  const [lavadores, setLavadores] = useState<Lavador[]>([])
+
+  const load = async () => {
+    const { data, error } = await supabase.from('lavadores').select('*').order('id', { ascending: false })
+    if (error) console.error('Erro lavadores:', error)
+    else setLavadores((data as any) || [])
+  }
+
+  useEffect(() => { load() }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!nome) return alert('Digite o nome do lavador')
+    const { error } = await supabase.from('lavadores').insert({ nome }).select()
+    if (error) console.error('Erro inserir lavador:', error)
+    else {
+      setNome('')
+      load()
+    }
+  }
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Remover lavador?')) return
+    const { error } = await supabase.from('lavadores').delete().eq('id', id)
+    if (error) console.error('Erro deletar lavador:', error)
+    else setLavadores((prev) => prev.filter((l) => l.id !== id))
+  }
+
   return (
-    <Routes>
-      <Route path="/lavadores" element={<Lavadores />} />
-      <Route path="/clientes" element={<Clientes />} />
-      <Route path="/estacionamento" element={<Estacionamento />} />
-      <Route path="/receita" element={<Receita />} />
+    <>
+      <Navbar title="Lavadores" />
+      <Routes>
+        <Route path="/lavadores" element={<Lavadores />} />
+        <Route path="/clientes" element={<Clientes />} />
+        <Route path="/estacionamento" element={<Estacionamento />} />
+        <Route path="/receita" element={<Receita />} />
 
-      <Route
-        path="/"
-        element={
-          <>
-            <div className="page lavadores">
-              <h1>Lavadores</h1>
-            </div>
+        <Route
+          path="/"
+          element={
+            <>
+              <div className="pages">
+                <Link to="/lavadores">
+                  <GrGroup />
+                </Link>
 
-            <div className="pages">
-              <Link to="/lavadores">
-                <GrGroup />
-              </Link>
+                <Link to="/clientes">
+                  <VscAccount />
+                </Link>
 
-              <Link to="/clientes">
-                <VscAccount />
-              </Link>
+                <Link to="/estacionamento">
+                  <GrCar />
+                </Link>
 
-              <Link to="/estacionamento">
-                <GrCar />
-              </Link>
+                <Link to="/receita">
+                  <GrLineChart />
+                </Link>
+              </div>
 
-              <Link to="/receita">
-                <GrLineChart />
-              </Link>
-            </div>
-
-            <div>
-              <form action="" method="post">
-                <input type="text" placeholder='Adicione Lavadores'/>
-                <button type="submit">Adicionar</button>
+              <form onSubmit={handleSubmit}>
+                <label htmlFor="lavador">Nome do Lavador:</label>
+                <input id="lavador" value={nome} onChange={(e) => setNome(e.target.value)} type="text" placeholder='Digite o nome do lavador'/>
+                <button type="submit">Adicionar Lavador</button>
               </form>
-            </div>
 
-            <div>
-              <p>Lista de lavadores e estatísticas rápidas.</p>
-            </div>
-
-            <div>
-              <h2>Lista de Lavadores</h2>
-            </div>
-          </>
-        }
-      />
-    </Routes>
-    
-
+              <div>
+                <h2>Lista de Lavadores</h2>
+                <div className="clientes-list">
+                  {lavadores.map((l) => (
+                    <div key={l.id} className="cliente-card">
+                      <div className="cliente-info">
+                        <h3>{l.nome}</h3>
+                        {l.telefone && <p><strong>Telefone:</strong> {l.telefone}</p>}
+                      </div>
+                      <button className="btn-delete" onClick={() => handleDelete(l.id)}>Remover</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          }
+        />
+      </Routes>
+    </>
   )
 }
 

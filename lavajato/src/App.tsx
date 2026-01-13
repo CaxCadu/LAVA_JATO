@@ -1,22 +1,25 @@
 import './App.css'
+import './styles/forms.css'
 import { VscAccount } from 'react-icons/vsc'
 import { GrCar, GrGroup, GrLineChart } from "react-icons/gr";
 import {Lavadores} from './pages/lavadores';
 import { Routes, Route, Link } from 'react-router-dom'
 import { Clientes } from './pages/clientes';
 import { Estacionamento } from './pages/estacionamento';
-import { Receita } from './pages/receita';  
+import { Receita } from './pages/receita';
+import { Navbar } from './components/Navbar';
 
 function App() {
   return (
-    <Routes>
-      <Route path="/lavadores" element={<Lavadores />} />
-      <Route path="/clientes" element={<Clientes />} />
-      <Route path="/estacionamento" element={<Estacionamento />} />
-      <Route path="/receita" element={<Receita />} />
-      <Route path="/" element={
-        <>
-          <h1>Lava Jato</h1>
+    <>
+      <Navbar title="Lava Jato" />
+      <Routes>
+        <Route path="/lavadores" element={<Lavadores />} />
+        <Route path="/clientes" element={<Clientes />} />
+        <Route path="/estacionamento" element={<Estacionamento />} />
+        <Route path="/receita" element={<Receita />} />
+        <Route path="/" element={
+          <>
 
           <div>
             <div className='receitadiaria'>
@@ -53,9 +56,10 @@ function App() {
             <Link to="/estacionamento"><GrCar /></Link>
             <Link to="/receita"><GrLineChart /></Link>
           </div>
-        </>
-      } />
-    </Routes>
+          </>
+        } />
+      </Routes>
+    </>
   )
 }
 
