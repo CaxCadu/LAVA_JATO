@@ -2,12 +2,12 @@ import '../App.css'
 import '../styles/forms.css'
 import { Navbar } from '../components/Navbar'
 
-export function Receita() {
-
+export function Lavagem() {
   return (
     <>
-      <Navbar title="Receita" />
+      <Navbar title="Lavagem" />
     </>
   )
 }
-export default Receita
+
+export default Lavagem

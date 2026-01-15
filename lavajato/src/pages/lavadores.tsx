@@ -1,12 +1,6 @@
 import { useEffect, useState } from 'react'
 import '../App.css'
 import '../styles/forms.css'
-import { VscAccount } from 'react-icons/vsc'
-import { GrCar, GrGroup, GrLineChart } from 'react-icons/gr'
-import { Routes, Route, Link } from 'react-router-dom'
-import { Clientes } from './clientes'
-import { Estacionamento } from './estacionamento'
-import { Receita } from './receita'
 import { Navbar } from '../components/Navbar'
 import { supabase } from '../services/supabaseClient'
 
@@ -49,58 +43,27 @@ export function Lavadores() {
   return (
     <>
       <Navbar title="Lavadores" />
-      <Routes>
-        <Route path="/lavadores" element={<Lavadores />} />
-        <Route path="/clientes" element={<Clientes />} />
-        <Route path="/estacionamento" element={<Estacionamento />} />
-        <Route path="/receita" element={<Receita />} />
 
-        <Route
-          path="/"
-          element={
-            <>
-              <div className="pages">
-                <Link to="/lavadores">
-                  <GrGroup />
-                </Link>
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="lavador">Nome do Lavador:</label>
+        <input id="lavador" value={nome} onChange={(e) => setNome(e.target.value)} type="text" placeholder='Digite o nome do lavador'/>
+        <button type="submit">Adicionar Lavador</button>
+      </form>
 
-                <Link to="/clientes">
-                  <VscAccount />
-                </Link>
-
-                <Link to="/estacionamento">
-                  <GrCar />
-                </Link>
-
-                <Link to="/receita">
-                  <GrLineChart />
-                </Link>
+      <div>
+        <h2>Lista de Lavadores</h2>
+        <div className="clientes-list">
+          {lavadores.map((l) => (
+            <div key={l.id} className="cliente-card">
+              <div className="cliente-info">
+                <h3>{l.nome}</h3>
+                {l.telefone && <p><strong>Telefone:</strong> {l.telefone}</p>}
               </div>
-
-              <form onSubmit={handleSubmit}>
-                <label htmlFor="lavador">Nome do Lavador:</label>
-                <input id="lavador" value={nome} onChange={(e) => setNome(e.target.value)} type="text" placeholder='Digite o nome do lavador'/>
-                <button type="submit">Adicionar Lavador</button>
-              </form>
-
-              <div>
-                <h2>Lista de Lavadores</h2>
-                <div className="clientes-list">
-                  {lavadores.map((l) => (
-                    <div key={l.id} className="cliente-card">
-                      <div className="cliente-info">
-                        <h3>{l.nome}</h3>
-                        {l.telefone && <p><strong>Telefone:</strong> {l.telefone}</p>}
-                      </div>
-                      <button className="btn-delete" onClick={() => handleDelete(l.id)}>Remover</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          }
-        />
-      </Routes>
+              <button className="btn-delete" onClick={() => handleDelete(l.id)}>Remover</button>
+            </div>
+          ))}
+        </div>
+      </div>
     </>
   )
 }

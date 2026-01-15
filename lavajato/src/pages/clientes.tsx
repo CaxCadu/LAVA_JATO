@@ -1,21 +1,14 @@
 import { useEffect, useState } from 'react'
 import '../App.css'
 import '../styles/forms.css'
-import { VscAccount } from 'react-icons/vsc'
-import { GrCar, GrGroup, GrLineChart } from 'react-icons/gr'
-import { Routes, Route, Link } from 'react-router-dom'
-import { Estacionamento } from './estacionamento'
-import { Receita } from './receita'
-import { Lavadores } from './lavadores'
 import { Navbar } from '../components/Navbar'
+import { supabase } from '../services/supabaseClient'
 
 interface Cliente {
   id: number
   nome: string
   telefone: string
 }
-
-import { supabase } from '../services/supabaseClient'
 
 interface Lavador {
   id: number
@@ -133,135 +126,105 @@ export function Clientes() {
   return (
     <>
       <Navbar title="Clientes" />
-      <Routes>
-        <Route path="/lavadores" element={<Lavadores />} />
-        <Route path="/estacionamento" element={<Estacionamento />} />
-        <Route path="/receita" element={<Receita />} />
 
-        <Route
-          path="/"
-          element={
-            <>
-              <div className="pages">
-                <Link to="/lavadores">
-                  <GrGroup />
-                </Link>
+      {/* Seção da Lista de Clientes */}
+      <div className="clientes-container">
+        <h2>Lista de Clientes</h2>
 
-                <Link to="/clientes">
-                  <VscAccount />
-                </Link>
+        {/* Botão Adicionar Cliente */}
+        {!showForm && (
+          <div className="btn-container">
+            <button
+              className="btn-add"
+              onClick={() => setShowForm(true)}
+            >
+              + Adicionar Cliente
+            </button>
+          </div>
+        )}
 
-                <Link to="/estacionamento">
-                  <GrCar />
-                </Link>
-
-                <Link to="/receita">
-                  <GrLineChart />
-                </Link>
+        {clientes.length === 0 ? (
+          <p className="empty-message">Nenhum cliente cadastrado.</p>
+        ) : (
+          <div className="clientes-list">
+            {clientes.map((cliente) => (
+              <div key={cliente.id} className="cliente-card">
+                <div className="cliente-info">
+                  <h3>{cliente.nome}</h3>
+                  <p>
+                    <strong>Telefone:</strong> {cliente.telefone}
+                  </p>
+                </div>
+                <button
+                  className="btn-delete"
+                  onClick={() => handleDeleteCliente(cliente.id)}
+                >
+                  Remover
+                </button>
               </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-              {/* Seção da Lista de Clientes */}
-              <div className="clientes-container">
-                <h2>Lista de Clientes</h2>
+      {/* Formulário - Renderizado Condicionalmente */}
+      {showForm && (
+        <form onSubmit={handleAddCliente}>
+          <label htmlFor="nome">Nome do Cliente:</label>
+          <input
+            id="nome"
+            type="text"
+            placeholder="Digite o nome do cliente"
+            value={formData.nome}
+            onChange={handleInputChange}
+          />
 
-                {/* Botão Adicionar Cliente */}
-                {!showForm && (
-                  <div className="btn-container">
-                    <button
-                      className="btn-add"
-                      onClick={() => setShowForm(true)}
-                    >
-                      + Adicionar Cliente
-                    </button>
-                  </div>
-                )}
+          <label htmlFor="telefone">Telefone:</label>
+          <input
+            id="tel"
+            type="tel"
+            placeholder="Digite o número"
+            value={formData.telefone}
+            onChange={handleInputChange}
+          />
 
-                {clientes.length === 0 ? (
-                  <p className="empty-message">Nenhum cliente cadastrado.</p>
-                ) : (
-                  <div className="clientes-list">
-                    {clientes.map((cliente) => (
-                      <div key={cliente.id} className="cliente-card">
-                        <div className="cliente-info">
-                          <h3>{cliente.nome}</h3>
-                          <p>
-                            <strong>Telefone:</strong> {cliente.telefone}
-                          </p>
-                        </div>
-                        <button
-                          className="btn-delete"
-                          onClick={() => handleDeleteCliente(cliente.id)}
-                        >
-                          Remover
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+          <label htmlFor="lavador_id">Escolha o Lavador:</label>
+          <select id="lavador_id" value={formData.lavador_id} onChange={handleInputChange}>
+            <option value="">Selecione um lavador</option>
+            {lavadores.map((l) => (
+              <option key={l.id} value={String(l.id)}>{l.nome}</option>
+            ))}
+          </select>
 
-              {/* Formulário - Renderizado Condicionalmente */}
-              {showForm && (
-                <form onSubmit={handleAddCliente}>
-                  <label htmlFor="nome">Nome do Cliente:</label>
-                  <input
-                    id="nome"
-                    type="text"
-                    placeholder="Digite o nome do cliente"
-                    value={formData.nome}
-                    onChange={handleInputChange}
-                  />
+          <label htmlFor="placa">Placa do Carro:</label>
+          <input
+            id="placa"
+            type="text"
+            placeholder="Ex: ABC1234"
+            value={formData.placa}
+            onChange={handleInputChange}
+          />
 
-                  <label htmlFor="telefone">Telefone:</label>
-                  <input
-                    id="telefone"
-                    type="tel"
-                    placeholder="Digite o número"
-                    value={formData.telefone}
-                    onChange={handleInputChange}
-                  />
+          <label htmlFor="servico_id">Tipo de Serviço:</label>
+          <select id="servico_id" value={formData.servico_id} onChange={handleInputChange}>
+            <option value="">Selecione um serviço</option>
+            {servicos.map((s) => (
+              <option key={s.id} value={String(s.id)}>{s.nome} — R$ {s.preco_base}</option>
+            ))}
+          </select>
 
-                  <label htmlFor="lavador_id">Escolha o Lavador:</label>
-                  <select id="lavador_id" value={formData.lavador_id} onChange={handleInputChange}>
-                    <option value="">Selecione um lavador</option>
-                    {lavadores.map((l) => (
-                      <option key={l.id} value={String(l.id)}>{l.nome}</option>
-                    ))}
-                  </select>
-
-                  <label htmlFor="placa">Placa do Carro:</label>
-                  <input
-                    id="placa"
-                    type="text"
-                    placeholder="Ex: ABC1234"
-                    value={formData.placa}
-                    onChange={handleInputChange}
-                  />
-
-                  <label htmlFor="servico_id">Tipo de Serviço:</label>
-                  <select id="servico_id" value={formData.servico_id} onChange={handleInputChange}>
-                    <option value="">Selecione um serviço</option>
-                    {servicos.map((s) => (
-                      <option key={s.id} value={String(s.id)}>{s.nome} — R$ {s.preco_base}</option>
-                    ))}
-                  </select>
-
-                  <div className="form-buttons">
-                    <button type="submit">Adicionar Cliente</button>
-                    <button
-                      type="button"
-                      className="btn-cancel"
-                      onClick={() => setShowForm(false)}
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                </form>
-              )}
-            </>
-          }
-        />
-      </Routes>
+          <div className="form-buttons">
+            <button type="submit">Adicionar Cliente</button>
+            <button
+              type="button"
+              className="btn-cancel"
+              onClick={() => setShowForm(false)}
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      )}
     </>
   )
 }
