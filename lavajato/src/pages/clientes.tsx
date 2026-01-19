@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import '../App.css'
 import '../styles/forms.css'
-import { Navbar } from '../components/Navbar'
 import { supabase } from '../services/supabaseClient'
 
 interface Cliente {
@@ -125,7 +124,7 @@ export function Clientes() {
 
   return (
     <>
-      <Navbar title="Clientes" />
+      <h1>Clientes</h1>
 
       {/* Seção da Lista de Clientes */}
       <div className="clientes-container">

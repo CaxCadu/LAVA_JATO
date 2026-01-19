@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import '../App.css'
 import '../styles/forms.css'
-import { Navbar } from '../components/Navbar'
 import { supabase } from '../services/supabaseClient'
 
 interface Lavador {
@@ -42,7 +41,7 @@ export function Lavadores() {
 
   return (
     <>
-      <Navbar title="Lavadores" />
+      <h1>Lavadores</h1>
 
       <form onSubmit={handleSubmit}>
         <label htmlFor="lavador">Nome do Lavador:</label>

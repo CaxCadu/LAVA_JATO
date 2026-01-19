@@ -2,13 +2,13 @@
 form {
   background: white;
   border-radius: 12px;
-  padding: 24px;
+  padding: 32px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   max-width: 500px;
   margin: 24px auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
 form input,
@@ -235,4 +235,47 @@ form button:active {
   .form-buttons {
     flex-direction: column;
   }
+}
+
+.lavagem-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+.form-section {
+  flex: 1;
+}
+
+.form-section form {
+  margin: 0;
+  margin-left: 60px;
+}
+
+.services-section {
+  flex: 1;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 24px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.lavagens-list {
+  margin-top: 16px;
+}
+
+.lavagem-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lavagem-info p {
+  margin: 4px 0;
 }
