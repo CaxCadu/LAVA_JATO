@@ -25,6 +25,7 @@ type Receitas = {
 }
 
 function App() {
+  const [showForm, setShowForm] = useState(false)
   const [receitaDia, setReceitaDia] = useState<ReceitaDia[]>([])
   const [receitas, setReceitas] = useState<Receitas>({
     total: 0,
@@ -57,6 +58,8 @@ function App() {
     fetchReceitaDia()
     fetchReceitas()
   }, [])
+
+
 
 
   return (
