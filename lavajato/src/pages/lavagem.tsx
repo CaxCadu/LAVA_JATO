@@ -15,6 +15,9 @@ interface Lavagem {
   placa: string
   valor: number
   created_at: string
+  lavadores: {
+    nome: string
+  }
 }
 
 export function Lavagem() {
@@ -32,7 +35,15 @@ export function Lavagem() {
     if (lErr) console.error('Erro lavadores:', lErr)
     else setLavadores((lavData as any) || [])
 
-    const { data: lavsData, error: lavsErr } = await supabase.from('lavagens').select('*').order('created_at', { ascending: false })
+    const { data: lavsData, error: lavsErr } = await supabase
+      .from('lavagens')
+      .select(`
+        *,
+        lavadores (
+          nome
+        )
+      `)
+      .order('created_at', { ascending: false })
     if (lavsErr) console.error('Erro lavagens:', lavsErr)
     else setLavagens((lavsData as any) || [])
   }
@@ -55,6 +66,7 @@ export function Lavagem() {
       alert('Preencha todos os campos!')
       return
     }
+
 
     const { error } = await supabase.from('lavagens').insert({
       lavador_id: Number(formData.lavador),
@@ -111,7 +123,7 @@ export function Lavagem() {
             {lavagens.map((lav) => (
               <div key={lav.id} className="lavagem-card">
                 <div className="lavagem-info">
-                  <p><strong>Lavador:</strong> {lavadores.find(l => l.id === lav.lavador_id)?.nome || 'Desconhecido'}</p>
+                  <p><strong>Lavador:</strong> {lav.lavadores?.nome || 'Desconhecido'}</p>
                   <p><strong>Categoria:</strong> {lav.categoria}</p>
                   <p><strong>Placa:</strong> {lav.placa}</p>
                   <p><strong>Valor:</strong> R$ {lav.valor}</p>

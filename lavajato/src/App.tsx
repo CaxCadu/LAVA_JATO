@@ -13,9 +13,12 @@ import { MdLocalCarWash } from "react-icons/md";
 import { supabase } from './services/supabaseClient'
 import { Lavagem } from './pages/lavagem'
 
-type ReceitaDia = {
-  dia: string
-  total_diario: number
+type ReceitaDiaItem = {
+  id: string
+  valor: string
+  created_at: string
+  origem?: string
+  data: number
 }
 
 type Receitas = {
@@ -24,41 +27,41 @@ type Receitas = {
   lucro: number
 }
 
+
 function App() {
-  const [showForm, setShowForm] = useState(false)
-  const [receitaDia, setReceitaDia] = useState<ReceitaDia[]>([])
+  const [receitaDia, setReceitaDia] = useState<ReceitaDiaItem[]>([])  
   const [receitas, setReceitas] = useState<Receitas>({
     total: 0,
     saidas: 0,
     lucro: 0
-  })
+})
+
 
   useEffect(() => {
-    async function fetchReceitaDia() {
-      const { data, error } = await supabase
-        .from('receitadia')
-        .select('*')
+  async function fetchReceitaDia() {
+    const { data, error } = await supabase
+      .from('receitadia')
+      .select('valor')
 
-      if (!error && data) {
-        setReceitaDia(data)
-      }
+    if (!error && data) {
+      setReceitaDia(data)
     }
+  }
 
-    async function fetchReceitas() {
-      const { data, error } = await supabase
-        .from('receitas')
-        .select('*')
-        .single()
+  async function fetchReceitas() {
+    const { data, error } = await supabase
+      .from('receitas')
+      .select('*')
+      .single()
 
-      if (!error && data) {
-        setReceitas(data)
-      }
+    if (!error && data) {
+      setReceitas(data)
     }
+  }
 
-    fetchReceitaDia()
-    fetchReceitas()
-  }, [])
-
+  fetchReceitaDia()
+  fetchReceitas()
+}, [])
 
 
 
@@ -86,16 +89,13 @@ function App() {
           path="/"
           element={
             <div className="dashboard">
-              <section>
-                <div className="receitadiaria">
-                  <h2>Receita diária</h2>
-                  {receitaDia.map(item => (
-                    <p key={item.dia}>
-                      R$ {item.total_diario.toFixed(2)}
-                    </p>
-                  ))}
-                </div>
+              <section className="receitadiaria">
+                <h2>Receita do dia</h2>
+                {receitaDia.map((item) => (
+                  <p key={item.id}>R$ {parseFloat(item.valor).toFixed(2)}</p>
+                ))}
               </section>
+
 
               <section className="receitamensal">
                 <h2>Receita mensal</h2>
