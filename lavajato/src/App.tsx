@@ -1,74 +1,83 @@
 import './App.css'
 import './styles/forms.css'
-import { VscAccount } from 'react-icons/vsc'
-import { GrCar, GrGroup, GrLineChart } from "react-icons/gr"
-import { FaHome } from "react-icons/fa";
-import { Routes, Route, Link } from 'react-router-dom'
+
 import { useEffect, useState } from 'react'
+import { Routes, Route, Link } from 'react-router-dom'
+
+import { FaHome } from 'react-icons/fa'
+import { VscAccount } from 'react-icons/vsc'
+import { GrCar, GrGroup, GrLineChart } from 'react-icons/gr'
+import { MdLocalCarWash } from 'react-icons/md'
+
+import { supabase } from './services/supabaseClient'
+
 import { Lavadores } from './pages/lavadores'
 import { Clientes } from './pages/clientes'
 import { Estacionamento } from './pages/estacionamento'
 import { Receita } from './pages/receita'
-import { MdLocalCarWash } from "react-icons/md";
-import { supabase } from './services/supabaseClient'
 import { Lavagem } from './pages/lavagem'
 
-type ReceitaDiaItem = {
-  id: string
-  valor: string
-  created_at: string
-  origem?: string
-  data: number
-}
+/* =======================
+   TIPOS (100% alinhados ao banco)
+======================= */
 
-type Receitas = {
-  total: number
+type ReceitaResumo = {
+  entradas: number
   saidas: number
   lucro: number
 }
 
+/* =======================
+   COMPONENTE
+======================= */
 
 function App() {
-  const [receitaDia, setReceitaDia] = useState<ReceitaDiaItem[]>([])  
-  const [receitas, setReceitas] = useState<Receitas>({
-    total: 0,
+  const [receitaDia, setReceitaDia] = useState<ReceitaResumo>({
+    entradas: 0,
     saidas: 0,
     lucro: 0
-})
+  })
 
+  const [receitaMes, setReceitaMes] = useState<ReceitaResumo>({
+    entradas: 0,
+    saidas: 0,
+    lucro: 0
+  })
 
   useEffect(() => {
-  async function fetchReceitaDia() {
-    const { data, error } = await supabase
-      .from('receitadia')
-      .select('valor')
+    document.title = 'Lava Jato'
 
-    if (!error && data) {
-      setReceitaDia(data)
+    const fetchData = async () => {
+      /* -------- Receita do dia -------- */
+      const { data: dia, error: errDia } = await supabase
+        .from('receitadia')
+        .select('*')
+        .single()
+
+      if (errDia) {
+        console.error('Erro receita dia:', errDia)
+      } else if (dia) {
+        setReceitaDia(dia)
+      }
+
+      /* -------- Receita do mês -------- */
+      const { data: mes, error: errMes } = await supabase
+        .from('receitames')
+        .select('*')
+        .single()
+
+      if (errMes) {
+        console.error('Erro receita mês:', errMes)
+      } else if (mes) {
+        setReceitaMes(mes)
+      }
     }
-  }
 
-  async function fetchReceitas() {
-    const { data, error } = await supabase
-      .from('receitas')
-      .select('*')
-      .single()
-
-    if (!error && data) {
-      setReceitas(data)
-    }
-  }
-
-  fetchReceitaDia()
-  fetchReceitas()
-}, [])
-
-
+    fetchData()
+  }, [])
 
   return (
     <>
-      <title>Lava Jato</title>
-
       <nav className="pages">
         <Link to="/"><FaHome /></Link>
         <Link to="/lavadores"><GrGroup /></Link>
@@ -89,32 +98,33 @@ function App() {
           path="/"
           element={
             <div className="dashboard">
+
               <section className="receitadiaria">
                 <h2>Receita do dia</h2>
-                {receitaDia.map((item) => (
-                  <p key={item.id}>R$ {parseFloat(item.valor).toFixed(2)}</p>
-                ))}
+                <p>Entradas: R$ {receitaDia.entradas.toFixed(2)}</p>
+                <p>Saídas: R$ {receitaDia.saidas.toFixed(2)}</p>
+                <p>Lucro: R$ {receitaDia.lucro.toFixed(2)}</p>
               </section>
-
 
               <section className="receitamensal">
                 <h2>Receita mensal</h2>
-                <p>R$ {receitas.total.toFixed(2)}</p>
-                <p>Despesas mensais</p>
-                <p>R$ {receitas.saidas.toFixed(2)}</p>
-                <p>Lucro líquido mensal</p>
-                <p>R$ {receitas.lucro.toFixed(2)}</p>
+                <p>Entradas: R$ {receitaMes.entradas.toFixed(2)}</p>
+                <p>Saídas: R$ {receitaMes.saidas.toFixed(2)}</p>
+                <p>Lucro líquido: R$ {receitaMes.lucro.toFixed(2)}</p>
               </section>
 
               <section className="lucro-liquido">
-                <h2>Lucro líquido</h2>
-                <p>Despesas</p>
-                <p>Receita total</p>
+                <h2>Resumo</h2>
+                <p>Total entradas: R$ {receitaMes.entradas.toFixed(2)}</p>
+                <p>Total saídas: R$ {receitaMes.saidas.toFixed(2)}</p>
+                <p>Lucro final: R$ {receitaMes.lucro.toFixed(2)}</p>
               </section>
 
               <section className="servicosporlavador">
                 <h2>Serviços por lavador</h2>
+                {/* próxima view */}
               </section>
+
             </div>
           }
         />

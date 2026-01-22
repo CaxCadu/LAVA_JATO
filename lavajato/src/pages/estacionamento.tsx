@@ -1,7 +1,7 @@
 import '../App.css'
 import '../styles/forms.css'
 import '../styles/checkbox.css'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { supabase } from '../services/supabaseClient'
 
 type Estacionamento = {
@@ -23,20 +23,6 @@ export function Estacionamento() {
   const [pagamento, setPagamento] = useState('')
   const [pago, setPago] = useState(false)
 
-  const loadEstacionamentos = async () => {
-    const { data, error } = await supabase
-      .from('estacionamento')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Erro ao carregar estacionamentos:', error)
-      return
-    }
-
-    setEstacionamentos(data ?? [])
-  }
-
   const updatePago = async (id: number, pagoAtual: boolean) => {
     const { error } = await supabase
       .from('estacionamento')
@@ -49,8 +35,8 @@ export function Estacionamento() {
     }
 
     // atualiza lista localmente
-    setEstacionamentos((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, pago: !pagoAtual } : e))
+    setEstacionamentos((prev: Estacionamento[]) =>
+      prev.map((e: Estacionamento) => (e.id === id ? { ...e, pago: !pagoAtual } : e))
     )
   }
 
@@ -80,7 +66,7 @@ export function Estacionamento() {
     }
 
     // atualiza lista sem refetch
-    setEstacionamentos((prev) => [data, ...prev])
+    setEstacionamentos((prev: Estacionamento[]) => [data, ...prev])
 
     // limpa form
     setCategoria('')
@@ -99,7 +85,7 @@ export function Estacionamento() {
 
         <select
           value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategoria(e.target.value)}
         >
           <option value="">Selecione a categoria</option>
           <option value="particular">Particular</option>
@@ -107,7 +93,7 @@ export function Estacionamento() {
           <option value="militar">Militar</option>
         </select>
 
-        <select name="pagamento" id="pagamento" value={pagamento} onChange={(e) => setPagamento(e.target.value)}>
+        <select name="pagamento" id="pagamento" value={pagamento} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPagamento(e.target.value)}>
           <option value="">Selecione o pagamento</option>
           <option value="sim">Maquina/PIX</option>
           <option value="nao">Dinheiro</option>
@@ -117,14 +103,14 @@ export function Estacionamento() {
           type="text"
           placeholder="Placa do veículo"
           value={placa}
-          onChange={(e) => setPlaca(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlaca(e.target.value)}
         />
 
         <input
           type="number"
           placeholder="Valor"
           value={valor}
-          onChange={(e) => setValor(Number(e.target.value))}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValor(Number(e.target.value))}
         />
         <label htmlFor="">Está pago?</label>
  
@@ -134,7 +120,7 @@ export function Estacionamento() {
             className="checkbox"
             id="checkbox"
             checked={pago}
-            onChange={(e) => setPago(e.target.checked)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPago(e.target.checked)}
         />
         
         <label className="switch" htmlFor="checkbox">
