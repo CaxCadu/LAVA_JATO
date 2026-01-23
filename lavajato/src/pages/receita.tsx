@@ -158,124 +158,164 @@ export function Receita() {
   }
 
   return (
-    <div className="receita-page">
-      <h1>Receitas e Saídas</h1>
+    <div className="page-wrapper">
+      <header className="page-header">
+        <h1>Receitas e Saídas</h1>
+        <p className="subtitle">Acompanhe o fluxo financeiro</p>
+      </header>
 
-      {/* Seletor de modo */}
-      <div className="mode-selector">
-        <button onClick={() => setMode('geral')} className={mode === 'geral' ? 'active' : ''}>
-          Visão Geral
-        </button>
-        <button onClick={() => setMode('lavador')} className={mode === 'lavador' ? 'active' : ''}>
-          Por Lavador
-        </button>
-      </div>
-
-      {/* Filtro temporal */}
-      <div className="date-filter">
-        <select value={month} onChange={(e) => setMonth(parseInt(e.target.value))}>
-          {Array.from({ length: 12 }, (_, i) => (
-            <option key={i + 1} value={i + 1}>
-              {new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}
-            </option>
-          ))}
-        </select>
-        <input
-          type="number"
-          value={year}
-          onChange={(e) => setYear(parseInt(e.target.value))}
-          min="2020"
-          max="2030"
-        />
-      </div>
-
-      {loading ? (
-        <p>Carregando...</p>
-      ) : data ? (
-        <>
-          {/* Visão Geral */}
-          {mode === 'geral' && (
-            <div className="summary-cards">
-              <div className="card">
-                <h3>Total Receitas</h3>
-                <p>R$ {data.totalReceitas.toFixed(2)}</p>
-              </div>
-              <div className="card">
-                <h3>Total Saídas</h3>
-                <p>R$ {data.totalSaidas.toFixed(2)}</p>
-              </div>
-              <div className="card">
-                <h3>Lucro Líquido</h3>
-                <p>R$ {data.lucro.toFixed(2)}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Por Lavador */}
-          {mode === 'lavador' && (
-            <table className="lavador-table">
-              <thead>
-                <tr>
-                  <th>Lavador</th>
-                  <th>Receitas</th>
-                  <th>Saídas</th>
-                  <th>Líquido</th>
-                  <th>Serviços</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.lavadores.map(lav => (
-                  <tr key={lav.id}>
-                    <td>{lav.nome}</td>
-                    <td>R$ {lav.receitas.toFixed(2)}</td>
-                    <td>R$ {lav.saidas.toFixed(2)}</td>
-                    <td>R$ {lav.liquido.toFixed(2)}</td>
-                    <td>{lav.servicos}</td>
-                  </tr>
+      <main className="page-content">
+        <div className="content-container">
+          {/* Filtros */}
+          <div className="filters-section">
+            <div className="filter-group">
+              <label>Mês</label>
+              <select value={month} onChange={(e) => setMonth(parseInt(e.target.value))}>
+                {Array.from({ length: 12 }, (_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}
+                  </option>
                 ))}
-              </tbody>
-            </table>
-          )}
+              </select>
+            </div>
+            <div className="filter-group">
+              <label>Ano</label>
+              <input
+                type="number"
+                value={year}
+                onChange={(e) => setYear(parseInt(e.target.value))}
+                min="2020"
+                max="2030"
+              />
+            </div>
 
-          {/* Formulário para registrar saída */}
-          <form onSubmit={addSaida} className="saida-form">
-            <h3>Registrar Saída</h3>
-            <input
-              type="text"
-              placeholder="Descrição"
-              value={saidaForm.descricao}
-              onChange={(e) => setSaidaForm({ ...saidaForm, descricao: e.target.value })}
-              required
-            />
-            <input
-              type="number"
-              placeholder="Valor"
-              step="0.01"
-              value={saidaForm.valor}
-              onChange={(e) => setSaidaForm({ ...saidaForm, valor: e.target.value })}
-              required
-            />
-            <input
-              type="date"
-              value={saidaForm.data}
-              onChange={(e) => setSaidaForm({ ...saidaForm, data: e.target.value })}
-              required
-            />
-            <select
-              value={saidaForm.lavador_id}
-              onChange={(e) => setSaidaForm({ ...saidaForm, lavador_id: e.target.value })}
-            >
-              <option value="">Geral</option>
-              {data.lavadores.map(lav => (
-                <option key={lav.id} value={lav.id}>{lav.nome}</option>
-              ))}
-            </select>
-            <button type="submit">Adicionar Saída</button>
-          </form>
-        </>
-      ) : (
-        <p>Erro ao carregar dados.</p>
-      )}
+            {/* Seletor de modo */}
+            <div className="mode-selector">
+              <button 
+                onClick={() => setMode('geral')} 
+                className={`mode-btn ${mode === 'geral' ? 'active' : ''}`}
+              >
+                Visão Geral
+              </button>
+              <button 
+                onClick={() => setMode('lavador')} 
+                className={`mode-btn ${mode === 'lavador' ? 'active' : ''}`}
+              >
+                Por Lavador
+              </button>
+            </div>
+          </div>
+
+          {loading ? (
+            <p className="loading">Carregando...</p>
+          ) : data ? (
+            <>
+              {/* Visão Geral */}
+              {mode === 'geral' && (
+                <div className="summary-cards">
+                  <div className="card summary-card">
+                    <div className="card-header">
+                      <h3>Total Receitas</h3>
+                    </div>
+                    <div className="card-content">
+                      <p className="card-value positivo">R$ {data.totalReceitas.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  <div className="card summary-card">
+                    <div className="card-header">
+                      <h3>Total Saídas</h3>
+                    </div>
+                    <div className="card-content">
+                      <p className="card-value negativo">R$ {data.totalSaidas.toFixed(2)}</p>
+                    </div>
+                  </div>
+                  <div className="card summary-card">
+                    <div className="card-header">
+                      <h3>Lucro Líquido</h3>
+                    </div>
+                    <div className="card-content">
+                      <p className="card-value highlight">R$ {data.lucro.toFixed(2)}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Por Lavador */}
+              {mode === 'lavador' && (
+                <div className="list-section">
+                  <h2>Receitas por Lavador</h2>
+                  {data.lavadores.length === 0 ? (
+                    <p className="empty-message">Nenhum lavador com serviços neste período.</p>
+                  ) : (
+                    <div className="table-responsive">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>Lavador</th>
+                            <th>Receitas</th>
+                            <th>Saídas</th>
+                            <th>Líquido</th>
+                            <th>Serviços</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.lavadores.map(lav => (
+                            <tr key={lav.id}>
+                              <td><strong>{lav.nome}</strong></td>
+                              <td className="positivo">R$ {lav.receitas.toFixed(2)}</td>
+                              <td className="negativo">R$ {lav.saidas.toFixed(2)}</td>
+                              <td className="highlight">R$ {lav.liquido.toFixed(2)}</td>
+                              <td>{lav.servicos}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Formulário para registrar saída */}
+              <form onSubmit={addSaida} className="form-card">
+                <h2>Registrar Saída</h2>
+                <input
+                  type="text"
+                  placeholder="Descrição"
+                  value={saidaForm.descricao}
+                  onChange={(e) => setSaidaForm({ ...saidaForm, descricao: e.target.value })}
+                  required
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Valor"
+                  value={saidaForm.valor}
+                  onChange={(e) => setSaidaForm({ ...saidaForm, valor: e.target.value })}
+                  required
+                />
+                <input
+                  type="date"
+                  value={saidaForm.data}
+                  onChange={(e) => setSaidaForm({ ...saidaForm, data: e.target.value })}
+                  required
+                />
+                <select
+                  value={saidaForm.lavador_id}
+                  onChange={(e) => setSaidaForm({ ...saidaForm, lavador_id: e.target.value })}
+                >
+                  <option value="">Saída Geral</option>
+                  {data.lavadores.map(lav => (
+                    <option key={lav.id} value={lav.id}>{lav.nome}</option>
+                  ))}
+                </select>
+                <button type="submit">Adicionar Saída</button>
+              </form>
+            </>
+          ) : (
+            <p className="error-message">Erro ao carregar dados.</p>
+          )}
+        </div>
+      </main>
     </div>
   )
 }

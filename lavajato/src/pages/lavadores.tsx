@@ -11,6 +11,7 @@ interface Lavador {
 
 export function Lavadores() {
   const [nome, setNome] = useState('')
+  const [showForm, setShowForm] = useState(false)
   const [lavadores, setLavadores] = useState<Lavador[]>([])
 
   const load = async () => {
@@ -28,6 +29,7 @@ export function Lavadores() {
     if (error) console.error('Erro inserir lavador:', error)
     else {
       setNome('')
+      setShowForm(false)
       load()
     }
   }
@@ -40,30 +42,63 @@ export function Lavadores() {
   }
 
   return (
-    <>
-      <h1>Lavadores</h1>
+    <div className="page-wrapper">
+      <header className="page-header">
+        <h1>Lavadores</h1>
+        <p className="subtitle">Gerencie os lavadores da empresa</p>
+      </header>
 
-      <form onSubmit={handleSubmit}>
-        <label htmlFor="lavador">Nome do Lavador:</label>
-        <input id="lavador" value={nome} onChange={(e) => setNome(e.target.value)} type="text" placeholder='Digite o nome do lavador'/>
-        <button type="submit">Adicionar Lavador</button>
-      </form>
-
-      <div>
-        <h2>Lista de Lavadores</h2>
-        <div className="clientes-list">
-          {lavadores.map((l) => (
-            <div key={l.id} className="cliente-card">
-              <div className="cliente-info">
-                <h3>{l.nome}</h3>
-                {l.telefone && <p><strong>Telefone:</strong> {l.telefone}</p>}
-              </div>
-              <button className="btn-delete" onClick={() => handleDelete(l.id)}>Remover</button>
+      <main className="page-content">
+        <div className="content-container">
+          {!showForm && (
+            <div className="btn-container">
+              <button className="btn-add" onClick={() => setShowForm(true)}>
+                + Adicionar Lavador
+              </button>
             </div>
-          ))}
+          )}
+
+          {showForm && (
+            <form onSubmit={handleSubmit} className="form-card">
+              <h2>Novo Lavador</h2>
+              <label htmlFor="lavador">Nome do Lavador:</label>
+              <input 
+                id="lavador" 
+                value={nome} 
+                onChange={(e) => setNome(e.target.value)} 
+                type="text" 
+                placeholder='Digite o nome do lavador'
+              />
+              <div className="form-buttons">
+                <button type="submit">Adicionar</button>
+                <button type="button" className="btn-cancel" onClick={() => setShowForm(false)}>
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          )}
+
+          <div className="list-section">
+            <h2>Lista de Lavadores</h2>
+            {lavadores.length === 0 ? (
+              <p className="empty-message">Nenhum lavador cadastrado.</p>
+            ) : (
+              <div className="clientes-list">
+                {lavadores.map((l) => (
+                  <div key={l.id} className="cliente-card">
+                    <div className="cliente-info">
+                      <h3>{l.nome}</h3>
+                      {l.telefone && <p><strong>Telefone:</strong> {l.telefone}</p>}
+                    </div>
+                    <button className="btn-delete" onClick={() => handleDelete(l.id)}>Remover</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   )
 }
 

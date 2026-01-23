@@ -77,97 +77,115 @@ export function Estacionamento() {
   }
 
   return (
-    <>
-      <h1>Estacionamento</h1>
+    <div className="page-wrapper">
+      <header className="page-header">
+        <h1>Estacionamento</h1>
+        <p className="subtitle">Registre e acompanhe os estacionamentos</p>
+      </header>
 
-      <form onSubmit={handleSubmit}>
-        <label>Registrar novo estacionamento</label>
+      <main className="page-content">
+        <div className="content-container">
+          <form onSubmit={handleSubmit} className="form-card">
+            <h2>Registrar Novo Estacionamento</h2>
 
-        <select
-          value={categoria}
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategoria(e.target.value)}
-        >
-          <option value="">Selecione a categoria</option>
-          <option value="particular">Particular</option>
-          <option value="aplicativo">Aplicativo</option>
-          <option value="militar">Militar</option>
-        </select>
+            <select
+              value={categoria}
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategoria(e.target.value)}
+            >
+              <option value="">Selecione a categoria</option>
+              <option value="particular">Particular</option>
+              <option value="aplicativo">Aplicativo</option>
+              <option value="militar">Militar</option>
+            </select>
 
-        <select name="pagamento" id="pagamento" value={pagamento} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPagamento(e.target.value)}>
-          <option value="">Selecione o pagamento</option>
-          <option value="sim">Maquina/PIX</option>
-          <option value="nao">Dinheiro</option>
-        </select>
+            <select 
+              name="pagamento" 
+              id="pagamento" 
+              value={pagamento} 
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPagamento(e.target.value)}
+            >
+              <option value="">Selecione o pagamento</option>
+              <option value="sim">Máquina/PIX</option>
+              <option value="nao">Dinheiro</option>
+            </select>
 
-        <input
-          type="text"
-          placeholder="Placa do veículo"
-          value={placa}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlaca(e.target.value)}
-        />
+            <input
+              type="text"
+              placeholder="Placa do veículo"
+              value={placa}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlaca(e.target.value)}
+            />
 
-        <input
-          type="number"
-          placeholder="Valor"
-          value={valor}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValor(Number(e.target.value))}
-        />
-        <label htmlFor="">Está pago?</label>
- 
-        <div className="container">
-          <input
-            type="checkbox"
-            className="checkbox"
-            id="checkbox"
-            checked={pago}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPago(e.target.checked)}
-        />
-        
-        <label className="switch" htmlFor="checkbox">
-          <span className="slider"></span>
-        </label>
+            <input
+              type="number"
+              step="0.01"
+              placeholder="Valor"
+              value={valor}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValor(Number(e.target.value))}
+            />
+
+            <label htmlFor="pago" className="checkbox-label">
+              <input
+                type="checkbox"
+                id="pago"
+                checked={pago}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPago(e.target.checked)}
+              />
+              <span>Já foi pago?</span>
+            </label>
+
+            <button type="submit">Registrar Estacionamento</button>
+          </form>
+
+          <div className="list-section">
+            <h2>Estacionamentos Registrados</h2>
+            {estacionamentos.length === 0 ? (
+              <p className="empty-message">Nenhum estacionamento registrado.</p>
+            ) : (
+              <div className="table-responsive">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Placa</th>
+                      <th>Categoria</th>
+                      <th>Valor</th>
+                      <th>Pagamento</th>
+                      <th>Status</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {estacionamentos.map((e) => (
+                      <tr key={e.id} className={e.pago ? 'pago' : 'pendente'}>
+                        <td><strong>{e.placa}</strong></td>
+                        <td>{e.categoria}</td>
+                        <td>R$ {e.valor.toFixed(2)}</td>
+                        <td>{e.pagamento === 'sim' ? 'Máquina/PIX' : 'Dinheiro'}</td>
+                        <td>
+                          <span className={`status-badge ${e.pago ? 'pago' : 'pendente'}`}>
+                            {e.pago ? 'Pago' : 'Pendente'}
+                          </span>
+                        </td>
+                        <td>
+                          {!e.pago && (
+                            <button 
+                              className="btn-action" 
+                              onClick={() => updatePago(e.id, e.pago)}
+                            >
+                              Marcar Pago
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
-
-
-        <button type="submit">
-          Registrar Estacionamento
-        </button>
-      </form>
-
-      <div className="services-section">
-        <label>Serviços registrados:</label>
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
-          <thead>
-            <tr style={{ backgroundColor: '#f2f2f2' }}>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Placa</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Categoria</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Valor</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Pagamento</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Pago</th>
-              <th style={{ border: '1px solid #ddd', padding: '8px' }}>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {estacionamentos.map((e) => (
-              <tr key={e.id} style={{ border: '1px solid #ddd' }}>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}><strong>{e.placa}</strong></td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{e.categoria}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>R$ {e.valor}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{e.pagamento === 'sim' ? 'Maquina/PIX' : 'Dinheiro'}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{e.pago ? 'Sim' : 'Não'}</td>
-                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                  {!e.pago && (
-                    <button onClick={() => updatePago(e.id, e.pago)} style={{ padding: '5px 10px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                      Marcar como Pago
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </>
+      </main>
+    </div>
   )
 }
 

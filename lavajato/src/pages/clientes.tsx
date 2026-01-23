@@ -7,16 +7,29 @@ type Cliente = {
   id: number
   nome: string
   telefone: string
+  data_nascimento?: string
+}
+
+type FormData = {
+  nome: string
+  telefone: string
+  data_nascimento: string
+  placa: string
+  ano_carro: string
+  modelo: string
 }
 
 export function Clientes() {
   const [showForm, setShowForm] = useState(false)
   const [clientes, setClientes] = useState<Cliente[]>([])
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     nome: '',
     telefone: '',
+    data_nascimento: '',
     placa: '',
+    ano_carro: '',
+    modelo: '',
   })
 
   const handleInputChange = (
@@ -50,18 +63,29 @@ export function Clientes() {
   const handleAddCliente = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.nome || !formData.telefone || !formData.placa) {
-      alert('Preencha todos os campos!')
+    const {
+      nome,
+      telefone,
+      data_nascimento,
+      placa,
+      ano_carro,
+      modelo,
+    } = formData
+
+    if (!nome || !telefone || !placa) {
+      alert('Preencha os campos obrigatórios')
       return
     }
 
+    // 1️⃣ Cria cliente
     const { data: cliente, error: clienteErr } = await supabase
       .from('clientes')
       .insert({
-        nome: formData.nome,
-        telefone: formData.telefone,
+        nome,
+        telefone,
+        data_nascimento: data_nascimento || null,
       })
-      .select('id, nome, telefone')
+      .select('id')
       .single()
 
     if (clienteErr || !cliente) {
@@ -70,21 +94,30 @@ export function Clientes() {
       return
     }
 
+    // 2️⃣ Cria veículo
     const { error: veiculoErr } = await supabase
       .from('veiculos')
       .insert({
         cliente_id: cliente.id,
-        placa: formData.placa,
+        placa,
+        ano: ano_carro ? Number(ano_carro) : null,
+        modelo: modelo || null,
       })
 
-    if (veiculoErr) console.error('Erro ao cadastrar veículo:', veiculoErr)
+    if (veiculoErr) {
+      console.error('Erro ao cadastrar veículo:', veiculoErr)
+      alert('Cliente criado, mas houve erro ao salvar o veículo')
+    }
 
     await loadInitialData()
 
     setFormData({
       nome: '',
       telefone: '',
+      data_nascimento: '',
       placa: '',
+      ano_carro: '',
+      modelo: '',
     })
 
     setShowForm(false)
@@ -100,6 +133,7 @@ export function Clientes() {
 
     if (error) {
       console.error('Erro ao remover cliente:', error)
+      alert('Erro ao remover cliente')
       return
     }
 
@@ -107,83 +141,96 @@ export function Clientes() {
   }
 
   return (
-    <>
-      <h1>Clientes</h1>
+    <div className="page-wrapper">
+      <header className="page-header">
+        <h1>Clientes</h1>
+        <p className="subtitle">Gerencie clientes e veículos</p>
+      </header>
 
-      <div className="clientes-container">
-        <h2>Lista de Clientes</h2>
+      <main className="page-content">
+        <div className="content-container">
+          {!showForm && (
+            <div className="btn-container">
+              <button className="btn-add" onClick={() => setShowForm(true)}>
+                + Adicionar Cliente
+              </button>
+            </div>
+          )}
 
-        {!showForm && (
-          <div className="btn-container">
-            <button className="btn-add" onClick={() => setShowForm(true)}>
-              + Adicionar Cliente
-            </button>
-          </div>
-        )}
+          {clientes.length === 0 ? (
+            <p className="empty-message">Nenhum cliente cadastrado.</p>
+          ) : (
+            <div className="list-section">
+              <h2>Lista de Clientes</h2>
+              <div className="clientes-list">
+                {clientes.map(cliente => (
+                  <div key={cliente.id} className="cliente-card">
+                    <div className="cliente-info">
+                      <h3>{cliente.nome}</h3>
+                      <p><strong>Telefone:</strong> {cliente.telefone}</p>
+                      {cliente.data_nascimento && (
+                        <p><strong>Nascimento:</strong> {cliente.data_nascimento}</p>
+                      )}
+                    </div>
+                    <button
+                      className="btn-delete"
+                      onClick={() => handleDeleteCliente(cliente.id)}
+                    >
+                      Remover
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-        {clientes.length === 0 ? (
-          <p className="empty-message">Nenhum cliente cadastrado.</p>
-        ) : (
-          <div className="clientes-list">
-            {clientes.map(cliente => (
-              <div key={cliente.id} className="cliente-card">
-                <div className="cliente-info">
-                  <h3>{cliente.nome}</h3>
-                  <p>
-                    <strong>Telefone:</strong> {cliente.telefone}
-                  </p>
-                </div>
+          {showForm && (
+            <form onSubmit={handleAddCliente} className="form-card">
+              <h2>Novo Cliente</h2>
+
+              <label htmlFor="nome">Nome</label>
+              <input id="nome" value={formData.nome} onChange={handleInputChange} />
+
+              <label htmlFor="telefone">Telefone</label>
+              <input id="telefone" value={formData.telefone} onChange={handleInputChange} />
+
+              <label htmlFor="data_nascimento">Data de Nascimento</label>
+              <input
+                id="data_nascimento"
+                type="date"
+                value={formData.data_nascimento}
+                onChange={handleInputChange}
+              />
+
+              <label htmlFor="placa">Placa</label>
+              <input id="placa" value={formData.placa} onChange={handleInputChange} />
+
+              <label htmlFor="ano_carro">Ano</label>
+              <input
+                id="ano_carro"
+                type="number"
+                value={formData.ano_carro}
+                onChange={handleInputChange}
+              />
+
+              <label htmlFor="modelo">Modelo</label>
+              <input id="modelo" value={formData.modelo} onChange={handleInputChange} />
+
+              <div className="form-buttons">
+                <button type="submit">Salvar</button>
                 <button
-                  className="btn-delete"
-                  onClick={() => handleDeleteCliente(cliente.id)}
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() => setShowForm(false)}
                 >
-                  Remover
+                  Cancelar
                 </button>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {showForm && (
-        <form onSubmit={handleAddCliente}>
-          <label htmlFor="nome">Nome do Cliente:</label>
-          <input
-            id="nome"
-            type="text"
-            value={formData.nome}
-            onChange={handleInputChange}
-          />
-
-          <label htmlFor="telefone">Telefone:</label>
-          <input
-            id="telefone"
-            type="tel"
-            value={formData.telefone}
-            onChange={handleInputChange}
-          />
-
-          <label htmlFor="placa">Placa do Carro:</label>
-          <input
-            id="placa"
-            type="text"
-            value={formData.placa}
-            onChange={handleInputChange}
-          />
-
-          <div className="form-buttons">
-            <button type="submit">Adicionar Cliente</button>
-            <button
-              type="button"
-              className="btn-cancel"
-              onClick={() => setShowForm(false)}
-            >
-              Cancelar
-            </button>
-          </div>
-        </form>
-      )}
-    </>
+            </form>
+          )}
+        </div>
+      </main>
+    </div>
   )
 }
 
