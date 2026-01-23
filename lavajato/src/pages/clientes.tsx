@@ -8,6 +8,9 @@ type Cliente = {
   nome: string
   telefone: string
   data_nascimento?: string
+  placa: string
+  modelo: string
+  ano_carro: string
 }
 
 type FormData = {
@@ -83,6 +86,9 @@ export function Clientes() {
       .insert({
         nome,
         telefone,
+        placa,
+        modelo,
+        ano_carro,
         data_nascimento: data_nascimento || null,
       })
       .select('id')
@@ -94,20 +100,6 @@ export function Clientes() {
       return
     }
 
-    // 2️⃣ Cria veículo
-    const { error: veiculoErr } = await supabase
-      .from('veiculos')
-      .insert({
-        cliente_id: cliente.id,
-        placa,
-        ano: ano_carro ? Number(ano_carro) : null,
-        modelo: modelo || null,
-      })
-
-    if (veiculoErr) {
-      console.error('Erro ao cadastrar veículo:', veiculoErr)
-      alert('Cliente criado, mas houve erro ao salvar o veículo')
-    }
 
     await loadInitialData()
 
@@ -169,8 +161,11 @@ export function Clientes() {
                       <h3>{cliente.nome}</h3>
                       <p><strong>Telefone:</strong> {cliente.telefone}</p>
                       {cliente.data_nascimento && (
-                        <p><strong>Nascimento:</strong> {cliente.data_nascimento}</p>
+                      <p><strong>Nascimento:</strong> {cliente.data_nascimento}</p>
                       )}
+                      <p><strong>Placa:</strong> {cliente.placa}</p>
+                      <p><strong>Modelo:</strong> {cliente.modelo}</p>
+                      <p><strong>Ano:</strong> {cliente.ano_carro}</p>
                     </div>
                     <button
                       className="btn-delete"

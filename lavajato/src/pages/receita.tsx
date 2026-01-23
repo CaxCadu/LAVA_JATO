@@ -1,122 +1,40 @@
+import { useState } from 'react'
 import '../App.css'
-import '../styles/forms.css'
-import { useState, useEffect } from 'react'
+import '../styles/receita.css'
 import { supabase } from '../services/supabaseClient'
 
-// Tipos para os dados
 type Lavador = {
-  id: number
-  nome: string
-}
-
-type Lavagem = {
-  id: number
   lavador_id: number
-  valor: number
-  data: string
-}
-
-type Saida = {
-  id: number
-  descricao: string
-  valor: number
-  data: string
-  lavador_id?: number // Opcional para saídas gerais
-}
-
-type ReceitaData = {
-  totalReceitas: number
-  totalSaidas: number
-  lucro: number
-  lavadores: {
-    id: number
-    nome: string
-    receitas: number
-    saidas: number
-    liquido: number
-    servicos: number
-  }[]
+  lavador_nome: string
+  total_lavagens: number
+  total_valor: number
+  valor_lavador: number
+  valor_empresa: number
 }
 
 export function Receita() {
-  // Estados para controle da UI
-  const [mode, setMode] = useState<'geral' | 'lavador'>('geral') // Modo de visualização
-  const [month, setMonth] = useState(new Date().getMonth() + 1) // Mês atual (1-12)
-  const [year, setYear] = useState(new Date().getFullYear()) // Ano atual
-  const [data, setData] = useState<ReceitaData | null>(null) // Dados carregados
-  const [loading, setLoading] = useState(false) // Estado de carregamento
+  const [lavagens_por_lavador, setLavagensPorLavador] = useState<Lavador[]>([])
+  const [loading, setLoading] = useState(false)
+  const [expandedLavador, setExpandedLavador] = useState<number | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
-  // Estados para o formulário de saída
   const [saidaForm, setSaidaForm] = useState({
     descricao: '',
     valor: '',
-    data: new Date().toISOString().split('T')[0], // Data no formato YYYY-MM-DD
-    lavador_id: ''
+    data: new Date().toISOString().split('T')[0]
   })
 
-  // Função para buscar dados do Supabase
   const fetchData = async () => {
     setLoading(true)
     try {
-      // Buscar lavagens do mês selecionado
-      const startDate = `${year}-${month.toString().padStart(2, '0')}-01`
-      const endDate = new Date(year, month, 1).toISOString().split('T')[0] // Último dia do mês
-
-      const { data: lavagens, error: lavError } = await supabase
-        .from('lavagens')
+      const { data, error } = await supabase
+        .from('lavagens_por_lavador')
         .select('*')
-        .gte('data', startDate)
-        .lte('data', endDate)
+        .order('lavador_nome', { ascending: true })
 
-      if (lavError) throw lavError
+      if (error) throw error
 
-      // Buscar saídas do mês
-      const { data: saidas, error: saiError } = await supabase
-        .from('saidas')
-        .select('*')
-        .gte('data', startDate)
-        .lte('data', endDate)
-
-      if (saiError) throw saiError
-
-      // Buscar lavadores
-      const { data: lavadores, error: lavadoresError } = await supabase
-        .from('lavadores')
-        .select('*')
-
-      if (lavadoresError) throw lavadoresError
-
-      // Calcular totais
-      const totalReceitas = lavagens.reduce((sum, l) => sum + l.valor, 0)
-      const totalSaidas = saidas.reduce((sum, s) => sum + s.valor, 0)
-      // Lucro líquido do dono: total arrecadado - 40% pagos aos lavadores - saídas
-      const comissaoTotalLavadores = totalReceitas * 0.4
-      const lucro = totalReceitas - comissaoTotalLavadores - totalSaidas
-
-      // Calcular por lavador
-      const lavadoresData = lavadores.map(lav => {
-        const receitasLav = lavagens.filter(l => l.lavador_id === lav.id).reduce((sum, l) => sum + l.valor, 0)
-        const saidasLav = saidas.filter(s => s.lavador_id === lav.id).reduce((sum, s) => sum + s.valor, 0)
-        const servicos = lavagens.filter(l => l.lavador_id === lav.id).length
-        // O lavador recebe 40% do arrecadado, menos as saídas associadas a ele
-        const comissaoDono = receitasLav * 0.6 // 60% para o dono
-        const valorLavador = receitasLav - comissaoDono // 40% para o lavador
-        return {
-          id: lav.id,
-          nome: lav.nome,
-          receitas: receitasLav, // Total arrecadado
-          saidas: saidasLav,
-          liquido: valorLavador - saidasLav, // Valor que o lavador recebe líquido
-          servicos
-        }
-      })
-
-      setData({
-        totalReceitas,
-        totalSaidas,
-        lucro,
-        lavadores: lavadoresData
-      })
+      setLavagensPorLavador(data || [])
     } catch (error) {
       console.error('Erro ao buscar dados:', error)
     } finally {
@@ -124,195 +42,169 @@ export function Receita() {
     }
   }
 
-  // Buscar dados quando mês, ano ou modo mudar
-  useEffect(() => {
-    fetchData()
-  }, [month, year])
 
-  // Função para adicionar saída
-  const addSaida = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const addSaida = async (lavadorId: number) => {
+    if (!saidaForm.descricao || !saidaForm.valor) {
+      alert('Preencha todos os campos')
+      return
+    }
+
+    setSubmitting(true)
     try {
       const { error } = await supabase
-        .from('saidas')
+        .from('despesas')
         .insert({
+          lavador_id: lavadorId,
           descricao: saidaForm.descricao,
           valor: parseFloat(saidaForm.valor),
-          data: saidaForm.data,
-          lavador_id: saidaForm.lavador_id ? parseInt(saidaForm.lavador_id) : null
+          data: saidaForm.data
         })
 
       if (error) throw error
 
-      // Resetar formulário e recarregar dados
       setSaidaForm({
         descricao: '',
         valor: '',
-        data: new Date().toISOString().split('T')[0],
-        lavador_id: ''
+        data: new Date().toISOString().split('T')[0]
       })
-      fetchData()
+      setExpandedLavador(null)
+      await fetchData()
     } catch (error) {
       console.error('Erro ao adicionar saída:', error)
+      alert('Erro ao registrar saída. Tente novamente.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
   return (
     <div className="page-wrapper">
       <header className="page-header">
-        <h1>Receitas e Saídas</h1>
-        <p className="subtitle">Acompanhe o fluxo financeiro</p>
+        <h1>Receitas por Lavador</h1>
+        <p className="subtitle">Acompanhe o desempenho e despesas de cada lavador</p>
       </header>
 
       <main className="page-content">
         <div className="content-container">
-          {/* Filtros */}
-          <div className="filters-section">
-            <div className="filter-group">
-              <label>Mês</label>
-              <select value={month} onChange={(e) => setMonth(parseInt(e.target.value))}>
-                {Array.from({ length: 12 }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {new Date(0, i).toLocaleString('pt-BR', { month: 'long' })}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="filter-group">
-              <label>Ano</label>
-              <input
-                type="number"
-                value={year}
-                onChange={(e) => setYear(parseInt(e.target.value))}
-                min="2020"
-                max="2030"
-              />
-            </div>
-
-            {/* Seletor de modo */}
-            <div className="mode-selector">
-              <button 
-                onClick={() => setMode('geral')} 
-                className={`mode-btn ${mode === 'geral' ? 'active' : ''}`}
-              >
-                Visão Geral
-              </button>
-              <button 
-                onClick={() => setMode('lavador')} 
-                className={`mode-btn ${mode === 'lavador' ? 'active' : ''}`}
-              >
-                Por Lavador
-              </button>
-            </div>
-          </div>
+          
 
           {loading ? (
-            <p className="loading">Carregando...</p>
-          ) : data ? (
-            <>
-              {/* Visão Geral */}
-              {mode === 'geral' && (
-                <div className="summary-cards">
-                  <div className="card summary-card">
-                    <div className="card-header">
-                      <h3>Total Receitas</h3>
-                    </div>
-                    <div className="card-content">
-                      <p className="card-value positivo">R$ {data.totalReceitas.toFixed(2)}</p>
-                    </div>
+            <p className="loading">Carregando dados...</p>
+          ) : lavagens_por_lavador.length > 0 ? (
+            <div className="receita-cards-grid">
+              {lavagens_por_lavador.map(lav => (
+                <div key={lav.lavador_id} className="receita-card">
+                  {/* Cabeçalho do Card */}
+                  <div className="receita-card-header">
+                    <h3 className="lavador-nome">{lav.lavador_nome}</h3>
+                    <button
+                      className={`btn-saida ${expandedLavador === lav.lavador_id ? 'active' : ''}`}
+                      onClick={() => setExpandedLavador(expandedLavador === lav.lavador_id ? null : lav.lavador_id)}
+                      disabled={submitting}
+                    >
+                      {expandedLavador === lav.lavador_id ? '✕ Cancelar' : '+ Saída'}
+                    </button>
                   </div>
-                  <div className="card summary-card">
-                    <div className="card-header">
-                      <h3>Total Saídas</h3>
-                    </div>
-                    <div className="card-content">
-                      <p className="card-value negativo">R$ {data.totalSaidas.toFixed(2)}</p>
-                    </div>
-                  </div>
-                  <div className="card summary-card">
-                    <div className="card-header">
-                      <h3>Lucro Líquido</h3>
-                    </div>
-                    <div className="card-content">
-                      <p className="card-value highlight">R$ {data.lucro.toFixed(2)}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
 
-              {/* Por Lavador */}
-              {mode === 'lavador' && (
-                <div className="list-section">
-                  <h2>Receitas por Lavador</h2>
-                  {data.lavadores.length === 0 ? (
-                    <p className="empty-message">Nenhum lavador com serviços neste período.</p>
-                  ) : (
-                    <div className="table-responsive">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Lavador</th>
-                            <th>Receitas</th>
-                            <th>Saídas</th>
-                            <th>Líquido</th>
-                            <th>Serviços</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {data.lavadores.map(lav => (
-                            <tr key={lav.id}>
-                              <td><strong>{lav.nome}</strong></td>
-                              <td className="positivo">R$ {lav.receitas.toFixed(2)}</td>
-                              <td className="negativo">R$ {lav.saidas.toFixed(2)}</td>
-                              <td className="highlight">R$ {lav.liquido.toFixed(2)}</td>
-                              <td>{lav.servicos}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                  {/* Estatísticas */}
+                  <div className="receita-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">Serviços</span>
+                      <span className="stat-value">{lav.total_lavagens}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">Total Faturado</span>
+                      <span className="stat-value">R$ {lav.total_valor.toFixed(2)}</span>
+                    </div>
+                    <div className="stat-item positivo">
+                      <span className="stat-label">Ganho do Lavador</span>
+                      <span className="stat-value">R$ {lav.valor_lavador.toFixed(2)}</span>
+                    </div>
+                    <div className="stat-item empresa">
+                      <span className="stat-label">Ganho da Empresa</span>
+                      <span className="stat-value">R$ {lav.valor_empresa.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  {/* Formulário de Saída - Expandido */}
+                  {expandedLavador === lav.lavador_id && (
+                    <div className="receita-form-section">
+                      <h4>Registrar Nova Saída</h4>
+                      <form className="receita-form" onSubmit={(e) => { e.preventDefault(); addSaida(lav.lavador_id); }}>
+                        <div className="form-group">
+                          <label htmlFor={`descricao-${lav.lavador_id}`}>Descrição</label>
+                          <input
+                            id={`descricao-${lav.lavador_id}`}
+                            type="text"
+                            placeholder="Ex: Uniforme, Material de Limpeza"
+                            value={saidaForm.descricao}
+                            onChange={(e) => setSaidaForm({ ...saidaForm, descricao: e.target.value })}
+                            disabled={submitting}
+                            required
+                          />
+                        </div>
+
+                        <div className="form-row">
+                          <div className="form-group">
+                            <label htmlFor={`valor-${lav.lavador_id}`}>Valor (R$)</label>
+                            <input
+                              id={`valor-${lav.lavador_id}`}
+                              type="number"
+                              step="0.01"
+                              min="0.01"
+                              placeholder="0.00"
+                              value={saidaForm.valor}
+                              onChange={(e) => setSaidaForm({ ...saidaForm, valor: e.target.value })}
+                              disabled={submitting}
+                              required
+                            />
+                          </div>
+
+                          <div className="form-group">
+                            <label htmlFor={`data-${lav.lavador_id}`}>Data</label>
+                            <input
+                              id={`data-${lav.lavador_id}`}
+                              type="date"
+                              value={saidaForm.data}
+                              onChange={(e) => setSaidaForm({ ...saidaForm, data: e.target.value })}
+                              disabled={submitting}
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="form-actions">
+                          <button 
+                            type="submit"
+                            className="btn-submit" 
+                            disabled={submitting || !saidaForm.descricao || !saidaForm.valor}
+                          >
+                            {submitting ? 'Salvando...' : 'Salvar Saída'}
+                          </button>
+                          <button 
+                            type="button"
+                            className="btn-cancel" 
+                            onClick={() => {
+                              setExpandedLavador(null)
+                              setSaidaForm({
+                                descricao: '',
+                                valor: '',
+                                data: new Date().toISOString().split('T')[0]
+                              })
+                            }}
+                            disabled={submitting}
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      </form>
                     </div>
                   )}
                 </div>
-              )}
-
-              {/* Formulário para registrar saída */}
-              <form onSubmit={addSaida} className="form-card">
-                <h2>Registrar Saída</h2>
-                <input
-                  type="text"
-                  placeholder="Descrição"
-                  value={saidaForm.descricao}
-                  onChange={(e) => setSaidaForm({ ...saidaForm, descricao: e.target.value })}
-                  required
-                />
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="Valor"
-                  value={saidaForm.valor}
-                  onChange={(e) => setSaidaForm({ ...saidaForm, valor: e.target.value })}
-                  required
-                />
-                <input
-                  type="date"
-                  value={saidaForm.data}
-                  onChange={(e) => setSaidaForm({ ...saidaForm, data: e.target.value })}
-                  required
-                />
-                <select
-                  value={saidaForm.lavador_id}
-                  onChange={(e) => setSaidaForm({ ...saidaForm, lavador_id: e.target.value })}
-                >
-                  <option value="">Saída Geral</option>
-                  {data.lavadores.map(lav => (
-                    <option key={lav.id} value={lav.id}>{lav.nome}</option>
-                  ))}
-                </select>
-                <button type="submit">Adicionar Saída</button>
-              </form>
-            </>
+              ))}
+            </div>
           ) : (
-            <p className="error-message">Erro ao carregar dados.</p>
+            <p className="empty-message">Nenhum lavador encontrado para este período.</p>
           )}
         </div>
       </main>
