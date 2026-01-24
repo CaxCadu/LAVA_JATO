@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import '../App.css'
 import '../styles/receita.css'
 import { supabase } from '../services/supabaseClient'
@@ -76,6 +76,11 @@ export function Receita() {
       setSubmitting(false)
     }
   }
+
+  useEffect(() => {
+  fetchData()
+}, [])
+
 
   return (
     <div className="page-wrapper">

@@ -10,8 +10,10 @@ interface Lavador {
 
 interface Lavagem {
   id: number
+  nome: string
   lavador_id: number
   categoria: string
+  metodo: string
   placa: string
   valor: number
   created_at: string
@@ -26,6 +28,7 @@ export function Lavagem() {
   const [formData, setFormData] = useState({
     lavador: '',
     categoria: '',
+    metodo: '',
     placa: '',
     valor: '',
   })
@@ -62,7 +65,7 @@ export function Lavagem() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.lavador || !formData.categoria || !formData.placa || !formData.valor) {
+    if (!formData.lavador || !formData.categoria || !formData.metodo || !formData.placa || !formData.valor) {
       alert('Preencha todos os campos!')
       return
     }
@@ -71,6 +74,7 @@ export function Lavagem() {
     const { error } = await supabase.from('lavagens').insert({
       lavador_id: Number(formData.lavador),
       categoria: formData.categoria,
+      metodo: formData.metodo,
       placa: formData.placa,
       valor: Number(formData.valor),
     })
@@ -79,7 +83,7 @@ export function Lavagem() {
       console.error('Erro inserir lavagem:', error)
       alert('Erro ao registrar lavagem')
     } else {
-      setFormData({ lavador: '', categoria: '', placa: '', valor: '' })
+      setFormData({ lavador: '', categoria: '', metodo: '', placa: '', valor: '' })
       loadData()
     }
   }
@@ -129,6 +133,12 @@ export function Lavagem() {
               <option value="militar">Militar</option>
             </select>
 
+            <select name="metodo" id="metodo" value={formData.metodo} onChange={handleInputChange} required>
+              <option value="">Selecione o método de pagamento</option>
+              <option value="dinheiro">Dinheiro</option>
+              <option value="maquinapix">Maquina/PIX</option>
+            </select>
+
             <input 
               type="text" 
               name="placa" 
@@ -167,6 +177,10 @@ export function Lavagem() {
                       <div className="info-row">
                         <span className="info-label">Categoria:</span>
                         <span className="info-value">{lav.categoria}</span>
+                      </div>
+                      <div className='info-row'>
+                        <span className="info-label">Método:</span>
+                        <span className="info-value">{lav.metodo}</span>
                       </div>
                       <div className="info-row">
                         <span className="info-label">Placa:</span>

@@ -1,7 +1,8 @@
 import '../App.css'
 import '../styles/forms.css'
 import '../styles/checkbox.css'
-import { useState } from 'react'
+
+import { useEffect, useState } from 'react'
 import { supabase } from '../services/supabaseClient'
 
 type Estacionamento = {
@@ -23,6 +24,26 @@ export function Estacionamento() {
   const [pagamento, setPagamento] = useState('')
   const [pago, setPago] = useState(false)
 
+  // 🔹 BUSCA OS DADOS AO CARREGAR A PÁGINA
+  useEffect(() => {
+    const fetchEstacionamentos = async () => {
+      const { data, error } = await supabase
+        .from('estacionamento')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Erro ao buscar estacionamentos:', error)
+        return
+      }
+
+      setEstacionamentos(data || [])
+    }
+
+    fetchEstacionamentos()
+  }, [])
+
+  // 🔹 ATUALIZA STATUS DE PAGAMENTO
   const updatePago = async (id: number, pagoAtual: boolean) => {
     const { error } = await supabase
       .from('estacionamento')
@@ -34,12 +55,14 @@ export function Estacionamento() {
       return
     }
 
-    // atualiza lista localmente
-    setEstacionamentos((prev: Estacionamento[]) =>
-      prev.map((e: Estacionamento) => (e.id === id ? { ...e, pago: !pagoAtual } : e))
+    setEstacionamentos(prev =>
+      prev.map(e =>
+        e.id === id ? { ...e, pago: !pagoAtual } : e
+      )
     )
   }
 
+  // 🔹 REGISTRA NOVO ESTACIONAMENTO
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -65,10 +88,8 @@ export function Estacionamento() {
       return
     }
 
-    // atualiza lista sem refetch
-    setEstacionamentos((prev: Estacionamento[]) => [data, ...prev])
+    setEstacionamentos(prev => [data, ...prev])
 
-    // limpa form
     setCategoria('')
     setPlaca('')
     setValor('')
@@ -88,24 +109,16 @@ export function Estacionamento() {
           <form onSubmit={handleSubmit} className="form-card">
             <h2>Registrar Novo Estacionamento</h2>
 
-            <select
-              value={categoria}
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setCategoria(e.target.value)}
-            >
+            <select value={categoria} onChange={e => setCategoria(e.target.value)}>
               <option value="">Selecione a categoria</option>
               <option value="particular">Particular</option>
               <option value="aplicativo">Aplicativo</option>
               <option value="militar">Militar</option>
             </select>
 
-            <select 
-              name="pagamento" 
-              id="pagamento" 
-              value={pagamento} 
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPagamento(e.target.value)}
-            >
+            <select value={pagamento} onChange={e => setPagamento(e.target.value)}>
               <option value="">Selecione o pagamento</option>
-              <option value="sim">Máquina/PIX</option>
+              <option value="sim">Máquina / PIX</option>
               <option value="nao">Dinheiro</option>
             </select>
 
@@ -113,7 +126,7 @@ export function Estacionamento() {
               type="text"
               placeholder="Placa do veículo"
               value={placa}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPlaca(e.target.value)}
+              onChange={e => setPlaca(e.target.value)}
             />
 
             <input
@@ -121,15 +134,14 @@ export function Estacionamento() {
               step="0.01"
               placeholder="Valor"
               value={valor}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setValor(Number(e.target.value))}
+              onChange={e => setValor(Number(e.target.value))}
             />
 
-            <label htmlFor="pago" className="checkbox-label">
+            <label className="checkbox-label">
               <input
                 type="checkbox"
-                id="pago"
                 checked={pago}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPago(e.target.checked)}
+                onChange={e => setPago(e.target.checked)}
               />
               <span>Já foi pago?</span>
             </label>
@@ -139,6 +151,7 @@ export function Estacionamento() {
 
           <div className="list-section">
             <h2>Estacionamentos Registrados</h2>
+
             {estacionamentos.length === 0 ? (
               <p className="empty-message">Nenhum estacionamento registrado.</p>
             ) : (
@@ -155,7 +168,7 @@ export function Estacionamento() {
                     </tr>
                   </thead>
                   <tbody>
-                    {estacionamentos.map((e) => (
+                    {estacionamentos.map(e => (
                       <tr key={e.id} className={e.pago ? 'pago' : 'pendente'}>
                         <td><strong>{e.placa}</strong></td>
                         <td>{e.categoria}</td>
@@ -168,8 +181,8 @@ export function Estacionamento() {
                         </td>
                         <td>
                           {!e.pago && (
-                            <button 
-                              className="btn-action" 
+                            <button
+                              className="btn-action"
                               onClick={() => updatePago(e.id, e.pago)}
                             >
                               Marcar Pago
