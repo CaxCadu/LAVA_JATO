@@ -148,6 +148,58 @@ export function Clientes() {
 
       <main className="page-content">
         <div className="content-container">
+          {showForm && (
+            <form onSubmit={handleAddCliente} className="form-card">
+              <h2>Novo Cliente</h2>
+
+              <label htmlFor="nome">Nome</label>
+              <input id="nome" value={formData.nome} onChange={handleInputChange} />
+
+              <label htmlFor="telefone">Telefone</label>
+              <input id="telefone" value={formData.telefone} onChange={handleInputChange} />
+
+              <label htmlFor="data_nascimento">Data de Nascimento</label>
+              <input
+                id="data_nascimento"
+                type="date"
+                value={formData.data_nascimento}
+                onChange={handleInputChange}
+              />
+
+              <label htmlFor="placa">Placa</label>
+              <input id="placa" value={formData.placa} onChange={handleInputChange} />
+
+              <label htmlFor="ano_carro">Ano</label>
+              <input
+                id="ano_carro"
+                type="number"
+                value={formData.ano_carro}
+                onChange={handleInputChange}
+              />
+
+              <label htmlFor="modelo">Modelo</label>
+              <input id="modelo" value={formData.modelo} onChange={handleInputChange} />
+
+              <label htmlFor="categoria">Categoria</label>
+              <select id="categoria" value={formData.categoria} onChange={handleInputChange}>
+                <option value="particular">Particular</option>
+                <option value="militar">Militar</option>
+                <option value="aplicativo">Aplicativo</option>
+              </select>
+
+              <div className="form-buttons">
+                <button type="submit">Salvar</button>
+                <button
+                  type="button"
+                  className="btn-cancel"
+                  onClick={() => setShowForm(false)}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          )}
+
           {!showForm && (
             <div className="btn-container">
               <button className="btn-add" onClick={() => setShowForm(true)}>
@@ -202,58 +254,6 @@ export function Clientes() {
                 ))}
               </div>
             </div>
-          )}
-
-          {showForm && (
-            <form onSubmit={handleAddCliente} className="form-card">
-              <h2>Novo Cliente</h2>
-
-              <label htmlFor="nome">Nome</label>
-              <input id="nome" value={formData.nome} onChange={handleInputChange} />
-
-              <label htmlFor="telefone">Telefone</label>
-              <input id="telefone" value={formData.telefone} onChange={handleInputChange} />
-
-              <label htmlFor="data_nascimento">Data de Nascimento</label>
-              <input
-                id="data_nascimento"
-                type="date"
-                value={formData.data_nascimento}
-                onChange={handleInputChange}
-              />
-
-              <label htmlFor="placa">Placa</label>
-              <input id="placa" value={formData.placa} onChange={handleInputChange} />
-
-              <label htmlFor="ano_carro">Ano</label>
-              <input
-                id="ano_carro"
-                type="number"
-                value={formData.ano_carro}
-                onChange={handleInputChange}
-              />
-
-              <label htmlFor="modelo">Modelo</label>
-              <input id="modelo" value={formData.modelo} onChange={handleInputChange} />
-
-              <label htmlFor="categoria">Categoria</label>
-              <select id="categoria" value={formData.categoria} onChange={handleInputChange}>
-                <option value="particular">Particular</option>
-                <option value="militar">Militar</option>
-                <option value="aplicativo">Aplicativo</option>
-              </select>
-
-              <div className="form-buttons">
-                <button type="submit">Salvar</button>
-                <button
-                  type="button"
-                  className="btn-cancel"
-                  onClick={() => setShowForm(false)}
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
           )}
         </div>
       </main>

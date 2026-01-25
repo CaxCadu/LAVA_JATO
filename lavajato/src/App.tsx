@@ -69,11 +69,6 @@ function App() {
   const location = useLocation()
 
   /* ==================== FUNÇÕES AUXILIARES ==================== */
-  
-  const formatarData = (data: Date) => {
-    data.setHours(0, 0, 0, 0)
-    return data
-  }
 
   const obterIntervaloDias = () => {
     // Parse das datas em formato local (não UTC)
