@@ -52,17 +52,20 @@ function App() {
   // Estados de Serviços
   const [lavagensDia, setLavagensDia] = useState<ServicoResumo>({ quantidade: 0, valor: 0 })
   const [estacionamentoDia, setEstacionamentoDia] = useState<ServicoResumo>({ quantidade: 0, valor: 0 })
+  const [despesas, setDespesas] = useState<Despesa[]>([])
 
   // Estados de UI
   const [showSaidaModal, setShowSaidaModal] = useState(false)
   const [showFechamentoModal, setShowFechamentoModal] = useState(false)
-
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+  
+  // Estados de Filtros
   const [dataSelecionada, setDataSelecionada] = useState<string>(
     new Date().toISOString().split('T')[0]
   )
-  const [refreshKey, setRefreshKey] = useState(0)
+  
   const location = useLocation()
 
   /* ==================== FUNÇÕES AUXILIARES ==================== */
@@ -73,10 +76,10 @@ function App() {
   }
 
   const obterIntervaloDias = () => {
-    const dataSelecion = new Date(dataSelecionada)
-    const diaInicio = formatarData(new Date(dataSelecion))
-    const diaFim = new Date(dataSelecion)
-    diaFim.setHours(23, 59, 59, 999)
+    // Parse da data em formato local (não UTC)
+    const [ano, mes, dia] = dataSelecionada.split('-').map(Number)
+    const diaInicio = new Date(ano, mes - 1, dia, 0, 0, 0, 0)
+    const diaFim = new Date(ano, mes - 1, dia, 23, 59, 59, 999)
 
     return { diaInicio, diaFim }
   }
@@ -143,6 +146,22 @@ function App() {
     return data?.reduce((sum, d) => sum + (d.valor || 0), 0) || 0
   }
 
+  const buscarDespesasDetalhadasNoDia = async (diaInicio: Date, diaFim: Date) => {
+    const { data, error } = await supabase
+      .from('despesas')
+      .select('*')
+      .gte('created_at', diaInicio.toISOString())
+      .lte('created_at', diaFim.toISOString())
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Erro despesas detalhadas dia:', error)
+      return []
+    }
+
+    return (data as Despesa[]) || []
+  }
+
   const buscarReceitaMes = async () => {
     const { firstDay, lastDay } = obterIntervaloMes()
     
@@ -190,15 +209,17 @@ function App() {
         const { diaInicio, diaFim } = obterIntervaloDias()
 
         // Buscar dados do dia selecionado
-        const [lavagens, estacionamento, receita_mes, despesas_valor] = await Promise.all([
+        const [lavagens, estacionamento, receita_mes, despesas_valor, despesasDetalhadas] = await Promise.all([
           buscarLavagensNoDia(diaInicio, diaFim),
           buscarEstacionamentoNoDia(diaInicio, diaFim),
           buscarReceitaMes(),
-          buscarDespesasNoDia(diaInicio, diaFim)
+          buscarDespesasNoDia(diaInicio, diaFim),
+          buscarDespesasDetalhadasNoDia(diaInicio, diaFim)
         ])
 
         setLavagensDia(lavagens)
         setEstacionamentoDia(estacionamento)
+        setDespesas(despesasDetalhadas || [])
 
         // Calcular receita do dia com despesas do dia
         const totalEntradas = lavagens.valor + estacionamento.valor
@@ -270,7 +291,24 @@ function App() {
           <Route path="/estacionamento" element={<Estacionamento />} />
           <Route path="/receita" element={<Receita />} />
           <Route path="/lavagem" element={<Lavagem />} />
-          <Route path="/" element={<DashboardPage />} />
+          <Route 
+            path="/" 
+            element={
+              <DashboardPage 
+                receitaDia={receitaDia}
+                receitaMes={receitaMes}
+                lavagensDia={lavagensDia}
+                estacionamentoDia={estacionamentoDia}
+                despesas={despesas}
+                loading={loading}
+                error={error}
+                dataSelecionada={dataSelecionada}
+                setDataSelecionada={setDataSelecionada}
+                setShowSaidaModal={setShowSaidaModal}
+                setShowFechamentoModal={setShowFechamentoModal}
+              />
+            } 
+          />
         </Routes>
 
         <SaidaModal 
@@ -289,7 +327,31 @@ function App() {
 
   /* ==================== COMPONENTE DASHBOARD ==================== */
 
-  function DashboardPage() {
+  function DashboardPage({
+    receitaDia,
+    receitaMes,
+    lavagensDia,
+    estacionamentoDia,
+    despesas,
+    loading,
+    error,
+    dataSelecionada,
+    setDataSelecionada,
+    setShowSaidaModal,
+    setShowFechamentoModal
+  }: {
+    receitaDia: ReceitaResumo
+    receitaMes: ReceitaResumo
+    lavagensDia: ServicoResumo
+    estacionamentoDia: ServicoResumo
+    despesas: Despesa[]
+    loading: boolean
+    error: string | null
+    dataSelecionada: string
+    setDataSelecionada: (data: string) => void
+    setShowSaidaModal: (show: boolean) => void
+    setShowFechamentoModal: (show: boolean) => void
+  }) {
     return (
       <div className="page-wrapper">
         <header className="page-header">
@@ -373,6 +435,30 @@ function App() {
                     <span className="metric-label">Lucro Final</span>
                     <span className="metric-value highlight">R$ {receitaMes.lucro.toFixed(2)}</span>
                   </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Linha 3: Despesas/Saídas */}
+            <section className="card-container full-width">
+              <div className="card servicosporlavador">
+                <div className="card-header">
+                  <h2 style={{ color: '#fff' }}>Saídas Registradas</h2>
+                </div>
+                <div className="card-content">
+                  {despesas.length === 0 ? (
+                    <p style={{ color: '#fff' }}>Nenhuma saída registrada</p>
+                  ) : (
+                    <ul className="lista-saidas">
+                      {despesas.map((d) => (
+                        <li key={d.id} className="saida-item">
+                          <span className="saida-descricao">{d.descricao}</span>
+                          <span className="saida-valor">R$ {d.valor.toFixed(2)}</span>
+                          <span className="saida-data">{new Date(d.created_at).toLocaleDateString('pt-BR')}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
             </section>
