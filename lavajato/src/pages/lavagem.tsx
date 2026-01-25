@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import '../App.css'
 import '../styles/forms.css'
+import '../styles/lavagem.css'
 import { supabase } from '../services/supabaseClient'
 
 interface Lavador {
@@ -13,7 +14,6 @@ interface Lavagem {
   nome: string
   lavador_id: number
   categoria: string
-  metodo: string
   placa: string
   valor: number
   created_at: string
@@ -25,6 +25,7 @@ interface Lavagem {
 export function Lavagem() {
   const [lavadores, setLavadores] = useState<Lavador[]>([])
   const [lavagens, setLavagens] = useState<Lavagem[]>([])
+  const [pesquisa, setPesquisa] = useState('')
   const [formData, setFormData] = useState({
     lavador: '',
     categoria: '',
@@ -65,7 +66,7 @@ export function Lavagem() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.lavador || !formData.categoria || !formData.metodo || !formData.placa || !formData.valor) {
+    if (!formData.lavador || !formData.categoria || !formData.placa || !formData.valor) {
       alert('Preencha todos os campos!')
       return
     }
@@ -74,7 +75,6 @@ export function Lavagem() {
     const { error } = await supabase.from('lavagens').insert({
       lavador_id: Number(formData.lavador),
       categoria: formData.categoria,
-      metodo: formData.metodo,
       placa: formData.placa,
       valor: Number(formData.valor),
     })
@@ -133,12 +133,6 @@ export function Lavagem() {
               <option value="militar">Militar</option>
             </select>
 
-            <select name="metodo" id="metodo" value={formData.metodo} onChange={handleInputChange} required>
-              <option value="">Selecione o método de pagamento</option>
-              <option value="dinheiro">Dinheiro</option>
-              <option value="maquinapix">Maquina/PIX</option>
-            </select>
-
             <input 
               type="text" 
               name="placa" 
@@ -163,41 +157,61 @@ export function Lavagem() {
 
           <div className="list-section">
             <h2>Serviços Registrados</h2>
+            
+            <div className="search-container">
+              <input
+                type="text"
+                placeholder="Pesquisar lavador..."
+                value={pesquisa}
+                onChange={(e) => setPesquisa(e.target.value)}
+                className="search-input"
+              />
+            </div>
+
             {lavagens.length === 0 ? (
               <p className="empty-message">Nenhuma lavagem registrada.</p>
             ) : (
-              <div className="lavagens-list">
-                {lavagens.map((lav) => (
-                  <div key={lav.id} className="lavagem-card">
-                    <div className="lavagem-info">
-                      <div className="info-row">
-                        <span className="info-label">Lavador:</span>
-                        <span className="info-value">{lav.lavadores?.nome || 'Desconhecido'}</span>
+              <div className="lavadores-columns">
+                {lavadores
+                  .filter((lavador) =>
+                    lavador.nome.toLowerCase().includes(pesquisa.toLowerCase())
+                  )
+                  .map((lavador) => {
+                    const servicosDoLavador = lavagens.filter((lav) => lav.lavador_id === lavador.id)
+                    
+                    return (
+                      <div key={lavador.id} className="lavador-column">
+                        <h3 className="lavador-title">{lavador.nome}</h3>
+                        <div className="servicos-list">
+                          {servicosDoLavador.length === 0 ? (
+                            <p className="empty-column">Nenhum serviço</p>
+                          ) : (
+                            servicosDoLavador.map((servico) => (
+                              <div key={servico.id} className="servico-item">
+                                <div className="servico-header">
+                                  <span className="placa">{servico.placa}</span>
+                                  <span className="valor">R$ {servico.valor.toFixed(2)}</span>
+                                </div>
+                                <div className="servico-footer">
+                                  <span className="categoria">{servico.categoria}</span>
+                                  <button 
+                                    className="btn-delete-small" 
+                                    onClick={() => handleDeleteLavagem(servico.id)}
+                                    title="Remover serviço"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                                <div className="servico-datetime">
+                                  {new Date(servico.created_at).toLocaleString('pt-BR')}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
                       </div>
-                      <div className="info-row">
-                        <span className="info-label">Categoria:</span>
-                        <span className="info-value">{lav.categoria}</span>
-                      </div>
-                      <div className='info-row'>
-                        <span className="info-label">Método:</span>
-                        <span className="info-value">{lav.metodo}</span>
-                      </div>
-                      <div className="info-row">
-                        <span className="info-label">Placa:</span>
-                        <span className="info-value">{lav.placa}</span>
-                      </div>
-                      <div className="info-row">
-                        <span className="info-label">Valor:</span>
-                        <span className="info-value highlight">R$ {lav.valor.toFixed(2)}</span>
-                      </div>
-                      <div className="info-row">
-                        <span className="info-label">Data:</span>
-                        <span className="info-value">{new Date(lav.created_at).toLocaleString()}</span>
-                      </div>
-                    </div>
-                    <button className="btn-delete" onClick={() => handleDeleteLavagem(lav.id)}>Remover</button>
-                  </div>
-                ))}
+                    )
+                  })}
               </div>
             )}
           </div>

@@ -1,0 +1,200 @@
+.search-container {
+  margin: 20px 0;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 16px;
+  font-size: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #1e40af;
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+}
+
+.search-input::placeholder {
+  color: #9ca3af;
+}
+
+.lavadores-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 20px 0;
+}
+
+.lavador-column {
+  flex: 1;
+  min-width: 280px;
+  max-width: 350px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fafafa;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.lavador-column:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.lavador-title {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  color: white;
+  padding: 16px 20px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 3px solid #1e40af;
+  text-align: center;
+}
+
+.servicos-list {
+  padding: 16px 12px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.servicos-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.servicos-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.servicos-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.servicos-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.servico-item {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+}
+
+.servico-item:hover {
+  border-color: #1e40af;
+  box-shadow: 0 2px 6px rgba(30, 64, 175, 0.15);
+}
+
+.servico-item:last-child {
+  margin-bottom: 0;
+}
+
+.servico-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.servico-header .placa {
+  font-weight: 600;
+  color: #1e40af;
+  font-size: 15px;
+  flex: 1;
+  word-break: break-word;
+}
+
+.servico-header .valor {
+  color: #059669;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.servico-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.servico-footer .categoria {
+  font-size: 12px;
+  color: #6b7280;
+  background-color: #f3f4f6;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex: 1;
+}
+
+.servico-datetime {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.btn-delete-small {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.btn-delete-small:hover {
+  background-color: #dc2626;
+  transform: scale(1.05);
+}
+
+.btn-delete-small:active {
+  transform: scale(0.95);
+}
+
+.empty-column {
+  text-align: center;
+  color: #9ca3af;
+  padding: 32px 16px;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .lavadores-columns {
+    flex-direction: column;
+  }
+
+  .lavador-column {
+    max-width: 100%;
+  }
+
+  .servicos-list {
+    max-height: none;
+  }
+
+  .search-input {
+    max-width: 100%;
+  }

@@ -11,6 +11,7 @@ type Cliente = {
   placa: string
   modelo: string
   ano_carro: string
+  categoria: string
 }
 
 type FormData = {
@@ -20,11 +21,13 @@ type FormData = {
   placa: string
   ano_carro: string
   modelo: string
+  categoria: string
 }
 
 export function Clientes() {
   const [showForm, setShowForm] = useState(false)
   const [clientes, setClientes] = useState<Cliente[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
 
   const [formData, setFormData] = useState<FormData>({
     nome: '',
@@ -33,10 +36,11 @@ export function Clientes() {
     placa: '',
     ano_carro: '',
     modelo: '',
+    categoria: 'particular',
   })
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { id, value } = e.target
     setFormData(prev => ({
@@ -73,6 +77,7 @@ export function Clientes() {
       placa,
       ano_carro,
       modelo,
+      categoria,
     } = formData
 
     if (!nome || !telefone || !placa) {
@@ -89,6 +94,7 @@ export function Clientes() {
         placa,
         modelo,
         ano_carro,
+        categoria,
         data_nascimento: data_nascimento || null,
       })
       .select('id')
@@ -110,6 +116,7 @@ export function Clientes() {
       placa: '',
       ano_carro: '',
       modelo: '',
+      categoria: 'particular',
     })
 
     setShowForm(false)
@@ -154,8 +161,25 @@ export function Clientes() {
           ) : (
             <div className="list-section">
               <h2>Lista de Clientes</h2>
+              
+              <div className="search-container">
+                <input
+                  type="text"
+                  placeholder="Pesquisar por nome, telefone ou placa..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="search-input"
+                />
+              </div>
+
               <div className="clientes-list">
-                {clientes.map(cliente => (
+                {clientes
+                  .filter(cliente =>
+                    cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    cliente.telefone.includes(searchTerm) ||
+                    cliente.placa.toUpperCase().includes(searchTerm.toUpperCase())
+                  )
+                  .map(cliente => (
                   <div key={cliente.id} className="cliente-card">
                     <div className="cliente-info">
                       <h3>{cliente.nome}</h3>
@@ -163,6 +187,7 @@ export function Clientes() {
                       {cliente.data_nascimento && (
                       <p><strong>Nascimento:</strong> {cliente.data_nascimento}</p>
                       )}
+                      <p><strong>Categoria:</strong> {cliente.categoria}</p>
                       <p><strong>Placa:</strong> {cliente.placa}</p>
                       <p><strong>Modelo:</strong> {cliente.modelo}</p>
                       <p><strong>Ano:</strong> {cliente.ano_carro}</p>
@@ -210,6 +235,13 @@ export function Clientes() {
 
               <label htmlFor="modelo">Modelo</label>
               <input id="modelo" value={formData.modelo} onChange={handleInputChange} />
+
+              <label htmlFor="categoria">Categoria</label>
+              <select id="categoria" value={formData.categoria} onChange={handleInputChange}>
+                <option value="particular">Particular</option>
+                <option value="militar">Militar</option>
+                <option value="aplicativo">Aplicativo</option>
+              </select>
 
               <div className="form-buttons">
                 <button type="submit">Salvar</button>
