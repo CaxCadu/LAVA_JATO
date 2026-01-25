@@ -62,9 +62,9 @@ function App() {
   const [refreshKey, setRefreshKey] = useState(0)
   
   // Estados de Filtros
-  const [dataSelecionada, setDataSelecionada] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  )
+  const hoje = new Date().toISOString().split('T')[0]
+  const [dataInicio, setDataInicio] = useState<string>(hoje)
+  const [dataFim, setDataFim] = useState<string>(hoje)
   
   const location = useLocation()
 
@@ -76,12 +76,14 @@ function App() {
   }
 
   const obterIntervaloDias = () => {
-    // Parse da data em formato local (não UTC)
-    const [ano, mes, dia] = dataSelecionada.split('-').map(Number)
-    const diaInicio = new Date(ano, mes - 1, dia, 0, 0, 0, 0)
-    const diaFim = new Date(ano, mes - 1, dia, 23, 59, 59, 999)
+    // Parse das datas em formato local (não UTC)
+    const [anoInicio, mesInicio, diaInicio] = dataInicio.split('-').map(Number)
+    const [anoFim, mesFim, diaFim] = dataFim.split('-').map(Number)
+    
+    const periodoInicio = new Date(anoInicio, mesInicio - 1, diaInicio, 0, 0, 0, 0)
+    const periodoFim = new Date(anoFim, mesFim - 1, diaFim, 23, 59, 59, 999)
 
-    return { diaInicio, diaFim }
+    return { diaInicio: periodoInicio, diaFim: periodoFim }
   }
 
   const obterIntervaloMes = () => {
@@ -240,7 +242,7 @@ function App() {
     }
 
     fetchData()
-  }, [refreshKey, dataSelecionada])
+  }, [refreshKey, dataInicio, dataFim])
 
   const handleSaidaRegistered = () => {
     setRefreshKey(prev => prev + 1)
@@ -302,8 +304,10 @@ function App() {
                 despesas={despesas}
                 loading={loading}
                 error={error}
-                dataSelecionada={dataSelecionada}
-                setDataSelecionada={setDataSelecionada}
+                dataInicio={dataInicio}
+                dataFim={dataFim}
+                setDataInicio={setDataInicio}
+                setDataFim={setDataFim}
                 setShowSaidaModal={setShowSaidaModal}
                 setShowFechamentoModal={setShowFechamentoModal}
               />
@@ -335,8 +339,10 @@ function App() {
     despesas,
     loading,
     error,
-    dataSelecionada,
-    setDataSelecionada,
+    dataInicio,
+    dataFim,
+    setDataInicio,
+    setDataFim,
     setShowSaidaModal,
     setShowFechamentoModal
   }: {
@@ -347,8 +353,10 @@ function App() {
     despesas: Despesa[]
     loading: boolean
     error: string | null
-    dataSelecionada: string
-    setDataSelecionada: (data: string) => void
+    dataInicio: string
+    dataFim: string
+    setDataInicio: (data: string) => void
+    setDataFim: (data: string) => void
     setShowSaidaModal: (show: boolean) => void
     setShowFechamentoModal: (show: boolean) => void
   }) {
@@ -361,19 +369,37 @@ function App() {
               <p className="subtitle">Resumo do negócio</p>
             </div>
             <div className="header-buttons">
-              <input 
-                type="date" 
-                value={dataSelecionada}
-                onChange={(e) => setDataSelecionada(e.target.value)}
-                className="filter-date"
-                style={{
-                  padding: '8px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid #ddd',
-                  fontSize: '14px',
-                  cursor: 'pointer'
-                }}
-              />
+              <div className="filter-dates" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input 
+                  type="date" 
+                  value={dataInicio}
+                  onChange={(e) => setDataInicio(e.target.value)}
+                  className="filter-date"
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid #ddd',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                  title="Data início"
+                />
+                <span style={{ color: '#666' }}>até</span>
+                <input 
+                  type="date" 
+                  value={dataFim}
+                  onChange={(e) => setDataFim(e.target.value)}
+                  className="filter-date"
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '4px',
+                    border: '1px solid #ddd',
+                    fontSize: '14px',
+                    cursor: 'pointer'
+                  }}
+                  title="Data fim"
+                />
+              </div>
               <button 
                 className="btn-register-saida" 
                 onClick={() => setShowFechamentoModal(true)}
