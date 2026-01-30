@@ -1,0 +1,468 @@
+/* ==================== ESTRUTURA GERAL ==================== */
+
+.fechamento-container {
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+}
+
+.fechamento-grid-single {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.fechamento-grid-single {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 30px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ==================== SEÇÕES ==================== */
+
+.fechamento-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.fechamento-section h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0;
+  padding: 0 5px;
+  border-left: 4px solid #3498db;
+  padding-left: 12px;
+}
+
+/* ==================== CARD DE SAÍDAS REGISTRADAS ==================== */
+
+.saidas-card {
+  border: 1px solid #e74c3c !important;
+}
+
+.saidas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.saidas-header label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.saidas-count {
+  background: #e74c3c;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.saidas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.saida-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #fef5f5;
+  border-radius: 6px;
+  border-left: 3px solid #e74c3c;
+}
+
+.saida-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.saida-descricao {
+  font-weight: 500;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.saida-valor {
+  font-weight: 600;
+  color: #e74c3c;
+  font-size: 14px;
+}
+
+.btn-saida-delete {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s;
+  margin-left: 10px;
+}
+
+.btn-saida-delete:hover {
+  background: #c0392b;
+  transform: scale(1.05);
+}
+
+/* ==================== MODAL DE CONFIRMAÇÃO ==================== */
+
+.confirmacao-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirmacao-modal {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  max-width: 400px;
+  width: 90%;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.confirmacao-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.confirmacao-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.confirmacao-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #7f8c8d;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirmacao-close:hover {
+  color: #e74c3c;
+}
+
+.confirmacao-texto {
+  padding: 20px;
+  margin: 0;
+  color: #2c3e50;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.confirmacao-buttons {
+  display: flex;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid #ecf0f1;
+  justify-content: flex-end;
+}
+
+.btn-cancelar,
+.btn-confirmar {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancelar {
+  background: #ecf0f1;
+  color: #2c3e50;
+}
+
+.btn-cancelar:hover {
+  background: #bdc3c7;
+}
+
+.btn-confirmar {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-confirmar:hover {
+  background: #c0392b;
+}
+
+/* ==================== CARDS DE AJUSTES ==================== */
+
+.ajuste-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ecf0f1;
+}
+
+.ajuste-card label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.form-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #3498db;
+}
+
+.ajuste-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.ajuste-input:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.ajuste-input:disabled {
+  background: #ecf0f1;
+  cursor: not-allowed;
+  color: #95a5a6;
+}
+
+.descricao-input {
+  margin-bottom: 8px;
+}
+
+.ajuste-descricao {
+  font-size: 12px;
+  color: #7f8c8d;
+  display: block;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* ==================== CARD DE RESUMO ==================== */
+
+.resumo-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  color: white;
+  margin-top: 10px;
+}
+
+.resumo-header {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.resumo-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.resumo-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  font-size: 14px;
+}
+
+.resumo-label {
+  font-weight: 500;
+}
+
+.resumo-valor {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.resumo-valor.negativo {
+  color: #ffcccc;
+}
+
+.resumo-valor.positivo {
+  color: #99ff99;
+}
+
+.resumo-valor.highlight {
+  font-size: 20px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.resumo-linha.separator {
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0;
+  margin: 8px 0;
+}
+
+.resumo-linha.destaque {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+.resumo-linha.total {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px 12px;
+  border-radius: 6px;
+  margin-top: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ==================== BOTÃO SALVAR ==================== */
+
+.btn-salvar-fechamento {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  color: white;
+  border: none;
+  padding: 14px 20px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+  width: 100%;
+  margin-top: 10px;
+}
+
+.btn-salvar-fechamento:hover:not(:disabled) {
+  background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.4);
+}
+
+.btn-salvar-fechamento:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-salvar-fechamento:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==================== RESULTADO DO FECHAMENTO ==================== */
+
+.resultado-fechamento {
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  text-align: center;
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.resultado-fechamento.positivo {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  border: 2px solid #1e8449;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+}
+
+.resultado-fechamento.negativo {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  border: 2px solid #a93226;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.resultado-titulo {
+  margin: 0 0 8px 0;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.resultado-valor {
+  margin: 0;
+  color: white;
+  font-size: 32px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ==================== MODAL DE CONFIRMAÇÃO ==================== */
+
+/* REMOVIDO - Confirmação de deleção não é mais necessária */
+
+@media (max-width: 1024px) {
+  .fechamento-grid-single {
+    gap: 20px;
+  }
+}

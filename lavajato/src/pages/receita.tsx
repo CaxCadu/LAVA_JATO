@@ -3,101 +3,189 @@ import '../App.css'
 import '../styles/receita.css'
 import { supabase } from '../services/supabaseClient'
 
-type Lavador = {
+/**
+ * 🔹 ESPELHO EXATO DA VIEW lavagens_por_lavador
+ */
+type LavadorView = {
   lavador_id: number
   lavador_nome: string
   total_lavagens: number
   total_valor: number
   valor_lavador: number
   valor_empresa: number
+  created_at_first: string // timestamp
+  created_at_last: string  // timestamp
 }
 
+type Periodo = 1 | 7 | 30 | 60
+
 export function Receita() {
-  const [lavagens_por_lavador, setLavagensPorLavador] = useState<Lavador[]>([])
+  const [dados, setDados] = useState<LavadorView[]>([])
   const [loading, setLoading] = useState(false)
   const [expandedLavador, setExpandedLavador] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [periodo, setPeriodo] = useState<Periodo>(7)
+
+  const [filtro, setFiltro] = useState({
+    data_inicio: '',
+    data_fim: ''
+  })
 
   const [saidaForm, setSaidaForm] = useState({
     descricao: '',
     valor: '',
-    data: new Date().toISOString().split('T')[0]
+    data: new Date().toISOString().slice(0, 10)
   })
 
-  const fetchData = async () => {
-    setLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from('lavagens_por_lavador')
-        .select('*')
-        .order('lavador_nome', { ascending: true })
+  /**
+   * 🔹 Calcula período em TIMESTAMP (compatível com created_at)
+   */
+  const calcularPeriodo = (dias: number) => {
+    const fim = new Date()
+    const inicio = new Date()
+    inicio.setDate(fim.getDate() - dias)
 
-      if (error) throw error
-
-      setLavagensPorLavador(data || [])
-    } catch (error) {
-      console.error('Erro ao buscar dados:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-
-  const addSaida = async (lavadorId: number) => {
-    if (!saidaForm.descricao || !saidaForm.valor) {
-      alert('Preencha todos os campos')
-      return
-    }
-
-    setSubmitting(true)
-    try {
-      const { error } = await supabase
-        .from('despesas')
-        .insert({
-          lavador_id: lavadorId,
-          descricao: saidaForm.descricao,
-          valor: parseFloat(saidaForm.valor),
-          data: saidaForm.data
-        })
-
-      if (error) throw error
-
-      setSaidaForm({
-        descricao: '',
-        valor: '',
-        data: new Date().toISOString().split('T')[0]
-      })
-      setExpandedLavador(null)
-      await fetchData()
-    } catch (error) {
-      console.error('Erro ao adicionar saída:', error)
-      alert('Erro ao registrar saída. Tente novamente.')
-    } finally {
-      setSubmitting(false)
+    return {
+      data_inicio: inicio.toISOString(),
+      data_fim: fim.toISOString()
     }
   }
 
   useEffect(() => {
-  fetchData()
-}, [])
+    setFiltro(calcularPeriodo(periodo))
+  }, [periodo])
 
+  const [dataInicioInput, setDataInicioInput] = useState('')
+  const [dataFimInput, setDataFimInput] = useState('')
+
+  useEffect(() => {
+    const p = calcularPeriodo(periodo)
+    setDataInicioInput(p.data_inicio.slice(0, 10))
+    setDataFimInput(p.data_fim.slice(0, 10))
+  }, [periodo])
+
+  /**
+   * 🔹 FETCH TOTALMENTE ALINHADO À VIEW
+   */
+  const fetchData = async () => {
+    if (!filtro.data_inicio || !filtro.data_fim) return
+
+    setLoading(true)
+
+    const { data, error } = await supabase
+      .from('lavagens_por_lavador')
+      .select('*')
+      .gte('created_at_first', filtro.data_inicio)
+      .lte('created_at_last', filtro.data_fim)
+      .order('lavador_nome')
+
+    if (error) {
+      console.error('Erro Supabase:', error)
+    } else {
+      setDados(data || [])
+    }
+
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [filtro])
+
+  const aplicarPeriodoManual = () => {
+    if (!dataInicioInput || !dataFimInput) {
+      alert('Datas inválidas')
+      return
+    }
+
+    setFiltro({
+      data_inicio: new Date(dataInicioInput).toISOString(),
+      data_fim: new Date(dataFimInput + 'T23:59:59').toISOString()
+    })
+  }
+
+  const addSaida = async (lavadorId: number) => {
+    if (!saidaForm.descricao || !saidaForm.valor) return
+
+    setSubmitting(true)
+
+    const { error } = await supabase.from('despesas').insert({
+      lavador_id: lavadorId,
+      descricao: saidaForm.descricao,
+      valor: Number(saidaForm.valor),
+      data: saidaForm.data
+    })
+
+    if (error) {
+      console.error(error)
+      alert('Erro ao salvar saída')
+    } else {
+      setExpandedLavador(null)
+      setSaidaForm({
+        descricao: '',
+        valor: '',
+        data: new Date().toISOString().slice(0, 10)
+      })
+      fetchData()
+    }
+
+    setSubmitting(false)
+  }
 
   return (
     <div className="page-wrapper">
       <header className="page-header">
         <h1>Receitas por Lavador</h1>
         <p className="subtitle">Acompanhe o desempenho e despesas de cada lavador</p>
+
+        <div className="filtro-periodo-botoes">
+          {[1, 7, 30, 60].map(p => (
+            <button
+              key={p}
+              className={periodo === p ? 'active' : ''}
+              onClick={() => setPeriodo(p as Periodo)}
+            >
+              {p === 1 ? 'Último dia' : `${p} dias`}
+            </button>
+          ))}
+        </div>
+
+        <div className="filtro-periodo">
+          <div className="filtro-grupo">
+            <label htmlFor="data-inicio">Data Inicial</label>
+            <input
+              id="data-inicio"
+              type="date"
+              value={dataInicioInput}
+              onChange={e => setDataInicioInput(e.target.value)}
+            />
+          </div>
+
+          <div className="filtro-grupo">
+            <label htmlFor="data-fim">Data Final</label>
+            <input
+              id="data-fim"
+              type="date"
+              value={dataFimInput}
+              onChange={e => setDataFimInput(e.target.value)}
+            />
+          </div>
+
+          <button className="btn-apply" onClick={aplicarPeriodoManual}>
+            Aplicar
+          </button>
+        </div>
       </header>
 
       <main className="page-content">
         <div className="content-container">
-          
-
           {loading ? (
             <p className="loading">Carregando dados...</p>
-          ) : lavagens_por_lavador.length > 0 ? (
+          ) : dados.length === 0 ? (
+            <p className="empty-message">Nenhum lavador encontrado para este período.</p>
+          ) : (
             <div className="receita-cards-grid">
-              {lavagens_por_lavador.map(lav => (
+              {dados.map(lav => (
                 <div key={lav.lavador_id} className="receita-card">
                   {/* Cabeçalho do Card */}
                   <div className="receita-card-header">
@@ -194,7 +282,7 @@ export function Receita() {
                               setSaidaForm({
                                 descricao: '',
                                 valor: '',
-                                data: new Date().toISOString().split('T')[0]
+                                data: new Date().toISOString().slice(0, 10)
                               })
                             }}
                             disabled={submitting}
@@ -208,8 +296,6 @@ export function Receita() {
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="empty-message">Nenhum lavador encontrado para este período.</p>
           )}
         </div>
       </main>

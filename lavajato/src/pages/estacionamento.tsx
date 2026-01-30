@@ -62,6 +62,25 @@ export function Estacionamento() {
     )
   }
 
+  // 🔹 DELETA ESTACIONAMENTO
+  const handleDelete = async (id: number) => {
+    if (!confirm('Tem certeza que deseja apagar este estacionamento?')) {
+      return
+    }
+
+    const { error } = await supabase
+      .from('estacionamento')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      console.error('Erro ao apagar estacionamento:', error)
+      return
+    }
+
+    setEstacionamentos(prev => prev.filter(e => e.id !== id))
+  }
+
   // 🔹 REGISTRA NOVO ESTACIONAMENTO
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -188,6 +207,12 @@ export function Estacionamento() {
                               Marcar Pago
                             </button>
                           )}
+                          <button
+                            className="btn-action btn-delete"
+                            onClick={() => handleDelete(e.id)}
+                          >
+                            Apagar
+                          </button>
                         </td>
                       </tr>
                     ))}

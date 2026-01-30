@@ -6,15 +6,15 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import { FaHome } from 'react-icons/fa'
 import { VscAccount } from 'react-icons/vsc'
 import { GrCar, GrGroup, GrLineChart } from 'react-icons/gr'
-import { MdLocalCarWash, MdAdd } from 'react-icons/md'
+import { MdLocalCarWash, MdAdd, MdCheckCircle, MdDelete } from 'react-icons/md'
 import { supabase } from './services/supabaseClient'
 import { Lavadores } from './pages/lavadores'
 import { Clientes } from './pages/clientes'
 import { Estacionamento } from './pages/estacionamento'
 import { Receita } from './pages/receita'
 import { Lavagem } from './pages/lavagem'
+import { Fechamento } from './pages/fechamento'
 import { SaidaModal } from './components/SaidaModal'
-import { FechamentoModal } from './components/FechamentoModal'
 
 /* ==================== TIPOS ==================== */
 type ReceitaResumo = {
@@ -56,7 +56,6 @@ function App() {
 
   // Estados de UI
   const [showSaidaModal, setShowSaidaModal] = useState(false)
-  const [showFechamentoModal, setShowFechamentoModal] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
@@ -193,6 +192,29 @@ function App() {
     return { entradas, saidas, lucro }
   }
 
+  const deletarSaida = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja deletar esta saída?')) {
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('despesas')
+        .delete()
+        .eq('id', id)
+
+      if (error) {
+        console.error('Erro ao deletar saída:', error)
+        setError('Erro ao deletar saída. Tente novamente.')
+      } else {
+        setRefreshKey(prev => prev + 1)
+      }
+    } catch (error) {
+      console.error('Erro ao deletar saída:', error)
+      setError('Erro ao deletar saída. Tente novamente.')
+    }
+  }
+
   /* ==================== EFEITO PRINCIPAL ==================== */
 
   useEffect(() => {
@@ -277,6 +299,10 @@ function App() {
             <MdLocalCarWash />
             <span>Lavagem</span>
           </Link>
+          <Link to="/fechamento" className={`nav-link ${location.pathname === '/fechamento' ? 'active' : ''}`} title="Fechamento">
+            <MdCheckCircle />
+            <span>Fechamento</span>
+          </Link>
         </nav>
       </aside>
 
@@ -288,6 +314,7 @@ function App() {
           <Route path="/estacionamento" element={<Estacionamento />} />
           <Route path="/receita" element={<Receita />} />
           <Route path="/lavagem" element={<Lavagem />} />
+          <Route path="/fechamento" element={<Fechamento />} />
           <Route 
             path="/" 
             element={
@@ -304,7 +331,7 @@ function App() {
                 setDataInicio={setDataInicio}
                 setDataFim={setDataFim}
                 setShowSaidaModal={setShowSaidaModal}
-                setShowFechamentoModal={setShowFechamentoModal}
+                onDeletarSaida={deletarSaida}
               />
             } 
           />
@@ -314,11 +341,6 @@ function App() {
           isOpen={showSaidaModal}
           onClose={() => setShowSaidaModal(false)}
           onSaidaRegistered={handleSaidaRegistered}
-        />
-        <FechamentoModal
-          isOpen={showFechamentoModal}
-          onClose={() => setShowFechamentoModal(false)}
-          valorTotalDia={receitaDia.lucro}
         />
       </main>
     </div>
@@ -339,7 +361,7 @@ function App() {
     setDataInicio,
     setDataFim,
     setShowSaidaModal,
-    setShowFechamentoModal
+    onDeletarSaida
   }: {
     receitaDia: ReceitaResumo
     receitaMes: ReceitaResumo
@@ -353,7 +375,7 @@ function App() {
     setDataInicio: (data: string) => void
     setDataFim: (data: string) => void
     setShowSaidaModal: (show: boolean) => void
-    setShowFechamentoModal: (show: boolean) => void
+    onDeletarSaida: (id: string) => void
   }) {
     return (
       <div className="page-wrapper">
@@ -395,13 +417,6 @@ function App() {
                   title="Data fim"
                 />
               </div>
-              <button 
-                className="btn-register-saida" 
-                onClick={() => setShowFechamentoModal(true)}
-                title="Fazer fechamento do dia"
-              >
-                <MdAdd /> Fazer Fechamento
-              </button>
               <button 
                 className="btn-register-saida" 
                 onClick={() => setShowSaidaModal(true)}
@@ -476,6 +491,25 @@ function App() {
                           <span className="saida-descricao">{d.descricao}</span>
                           <span className="saida-valor">R$ {d.valor.toFixed(2)}</span>
                           <span className="saida-data">{new Date(d.created_at).toLocaleDateString('pt-BR')}</span>
+                          <button 
+                            className="btn-delete-saida"
+                            onClick={() => onDeletarSaida(d.id)}
+                            title="Deletar saída"
+                            style={{
+                              background: '#ff4444',
+                              border: 'none',
+                              color: '#fff',
+                              padding: '6px 10px',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontSize: '14px'
+                            }}
+                          >
+                            <MdDelete /> Deletar
+                          </button>
                         </li>
                       ))}
                     </ul>

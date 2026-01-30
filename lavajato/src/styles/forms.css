@@ -28,7 +28,7 @@ form select {
 form input:focus,
 form select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #012fff;
   background-color: white;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
@@ -98,7 +98,7 @@ form button:disabled {
 .cliente-card:hover {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   transform: translateY(-4px);
-  border-color: #667eea;
+  border-color: #0a34f1;
 }
 
 .cliente-info {
@@ -135,7 +135,7 @@ form button:disabled {
 
 .btn-add {
   padding: 12px 28px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: rgb(16, 11, 255);
   color: white;
   border: none;
   border-radius: 8px;

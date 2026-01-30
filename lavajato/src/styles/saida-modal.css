@@ -51,7 +51,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 28px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0004ff;
   color: white;
   border-bottom: none;
 }
@@ -117,7 +117,7 @@
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
-  color: #667eea;
+  color: #0c36f1;
 }
 
 .form-group input {
@@ -136,14 +136,14 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #0e36e9;
   background: white;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
 }
 
 .form-group input.filled {
   background: #f0f4ff;
-  border-color: #667eea;
+  border-color: #0c35ec;
 }
 
 .form-group input:disabled {
@@ -175,11 +175,11 @@
   border-radius: 8px;
   font-size: 0.9rem;
   color: #555;
-  border-left: 3px solid #667eea;
+  border-left: 3px solid #0e37ee;
 }
 
 .valor-preview strong {
-  color: #667eea;
+  color: #0d37f0;
   font-size: 1.05rem;
 }
 
@@ -269,14 +269,14 @@
 }
 
 .btn-submit {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0004ff;
   color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 4, 255, 0.3);
 }
 
 .btn-submit:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 4, 255, 0.4);
 }
 
 .btn-submit:active:not(:disabled) {
@@ -344,7 +344,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0004ff;
   color: white;
   border: none;
   border-radius: 8px;

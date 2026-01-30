@@ -112,18 +112,19 @@ html, body, #root {
 
 .sidebar {
     width: 260px;
-    background: #667eea;
-    color: white;
+    background: linear-gradient(90deg, #0b3b91 0%, #063079 100%);
+    color: AliceBlue;
     padding: 20px 0;
     display: flex;
     flex-direction: column;
-    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 2px 0 16px rgba(4, 30, 90, 0.12);
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
     overflow-y: auto;
 }
 
 .logo {
     padding: 0 20px 30px 20px;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.06);
     margin-bottom: 20px;
 }
 
@@ -131,7 +132,7 @@ html, body, #root {
     margin: 0;
     font-size: 24px;
     font-weight: 700;
-    color: white;
+    color: AliceBlue;
 }
 
 .nav-menu {
@@ -146,10 +147,10 @@ html, body, #root {
     align-items: center;
     gap: 12px;
     padding: 12px 16px;
-    color: rgba(255, 255, 255, 0.8);
+    color: AliceBlue;
     text-decoration: none;
     border-radius: 8px;
-    transition: all 0.3s ease;
+    transition: background 0.18s ease, transform 0.08s ease;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -195,6 +196,7 @@ html, body, #root {
     margin: 0;
     font-size: 14px;
     opacity: 0.7;
+    color: #e0e0e0;
 }
 
 /* ==================== DASHBOARD ==================== */
@@ -219,7 +221,7 @@ html, body, #root {
 }
 
 .card {
-    background: white;
+    background: aliceblue;
     border-radius: 12px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     overflow: hidden;
@@ -232,16 +234,17 @@ html, body, #root {
 }
 
 .card-header {
-    background: #667eea;
-    color: white;
+    background: linear-gradient(90deg, #0b3b91 0%, #063079 100%);
+    color: AliceBlue;
     padding: 20px;
-    border-bottom: 4px solid #667eea;
+    border-bottom: 4px solid rgba(4, 30, 90, 0.28);
 }
 
 .card-header h2 {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
+    color: AliceBlue;
 }
 
 .card-content {
@@ -622,7 +625,7 @@ h2 {
 .filter-group select:focus,
 .filter-group input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: #163de7;
     background-color: white;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }

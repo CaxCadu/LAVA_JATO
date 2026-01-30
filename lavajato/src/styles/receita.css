@@ -31,7 +31,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 18px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #0530ee;
   color: white;
   border-bottom: none;
 }
@@ -98,7 +98,7 @@
 }
 
 .stat-item:hover {
-  border-color: #667eea;
+  border-color: #0e34dd;
   background: #f9f9ff;
 }
 
@@ -117,21 +117,21 @@
 }
 
 .stat-item.positivo {
-  border-color: #22c55e;
+  border-color: #928403;
   background: rgba(34, 197, 94, 0.05);
 }
 
 .stat-item.positivo .stat-value {
-  color: #16a34a;
+  color: #767e03;
 }
 
 .stat-item.empresa {
-  border-color: #667eea;
+  border-color: #0a34ec;
   background: rgba(102, 126, 234, 0.05);
 }
 
 .stat-item.empresa .stat-value {
-  color: #667eea;
+  color: #0532f7;
 }
 
 /* ==================== SEÇÃO DO FORMULÁRIO ==================== */
@@ -216,6 +216,52 @@
   display: flex;
   gap: 12px;
   margin-top: 8px;
+}
+
+/* ==================== BOTOES E FILTRO PERSONALIZADO ==================== */
+.filtro-periodo-botoes {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.filtro-periodo-botoes button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #dcdcdc;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.filtro-periodo-botoes button.active {
+  background: #0530ee;
+  color: white;
+  border-color: #0530ee;
+}
+
+.filtro-periodo {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.btn-apply {
+  padding: 10px 14px;
+  background: #0530ee;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .filtro-periodo {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .btn-submit,
@@ -366,6 +412,117 @@
   .btn-submit,
   .btn-cancel {
     padding: 10px 12px;
+    font-size: 12px;
+  }
+}
+
+/* ==================== FILTRO POR PERÍODO ==================== */
+
+.filtro-periodo-botoes {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.filtro-periodo-botoes button {
+  padding: 8px 14px;
+  border: 2px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.filtro-periodo-botoes button:hover {
+  border-color: #0530ee;
+  color: #0530ee;
+}
+
+.filtro-periodo-botoes button.active {
+  background: #0530ee;
+  color: white;
+  border-color: #0530ee;
+}
+
+.filtro-periodo {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filtro-grupo label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.filtro-grupo input {
+  padding: 10px 12px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  min-width: 180px;
+  background: white;
+}
+
+.filtro-grupo input:focus {
+  outline: none;
+  border-color: #0530ee;
+  box-shadow: 0 0 0 3px rgba(5, 48, 238, 0.1);
+}
+
+.btn-apply {
+  padding: 10px 16px;
+  background: #0530ee;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all 0.3s ease;
+}
+
+.btn-apply:hover {
+  background: #0427c9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(5, 48, 238, 0.3);
+}
+
+@media (max-width: 768px) {
+  .filtro-periodo {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filtro-grupo input {
+    min-width: 100%;
+  }
+
+  .filtro-periodo-botoes {
+    width: 100%;
+  }
+
+  .filtro-periodo-botoes button {
+    flex: 1;
     font-size: 12px;
   }
 }
