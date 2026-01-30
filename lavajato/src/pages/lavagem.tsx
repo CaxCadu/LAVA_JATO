@@ -16,6 +16,7 @@ interface Lavagem {
   categoria: string
   placa: string
   valor: number
+  pago: boolean
   created_at: string
   lavadores: {
     nome: string
@@ -23,6 +24,7 @@ interface Lavagem {
 }
 
 export function Lavagem() {
+  const [pago, setPago] = useState(false)
   const [lavadores, setLavadores] = useState<Lavador[]>([])
   const [lavagens, setLavagens] = useState<Lavagem[]>([])
   const [pesquisa, setPesquisa] = useState('')
@@ -64,19 +66,39 @@ export function Lavagem() {
     }))
   }
 
+  const updatePago = async (id: number, pagoAtual: boolean) => {
+    const { error } = await supabase
+      .from('lavagens')
+      .update({ pago: !pagoAtual })
+      .eq('id', id)
+
+    if (error) {
+      console.error('Erro ao atualizar pagamento:', error)
+      return
+    }
+
+    setLavagens(prev =>
+      prev.map(l =>
+        l.id === id ? { ...l, pago: !pagoAtual } : l
+      )
+    )
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validação corrigida: remover pago da validação pois é um boolean válido
     if (!formData.lavador || !formData.categoria || !formData.placa || !formData.valor) {
       alert('Preencha todos os campos!')
       return
     }
-
 
     const { error } = await supabase.from('lavagens').insert({
       lavador_id: Number(formData.lavador),
       categoria: formData.categoria,
       placa: formData.placa,
       valor: Number(formData.valor),
+      pago: pago, // Use o estado 'pago' que está no componente
     })
 
     if (error) {
@@ -84,6 +106,7 @@ export function Lavagem() {
       alert('Erro ao registrar lavagem')
     } else {
       setFormData({ lavador: '', categoria: '', metodo: '', placa: '', valor: '' })
+      setPago(false) // Reseta o checkbox também
       loadData()
     }
   }
@@ -109,7 +132,7 @@ export function Lavagem() {
             
             <select 
               name="lavador" 
-              id="lavador" 
+              id="lavador"
               value={formData.lavador} 
               onChange={handleInputChange}
               required
@@ -151,6 +174,15 @@ export function Lavagem() {
               onChange={handleInputChange}
               required
             />
+
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={pago}
+                onChange={e => setPago(e.target.checked)}
+              />
+              <span>Já foi pago?</span>
+            </label>
 
             <button type="submit">Registrar Lavagem</button>
           </form>
@@ -194,6 +226,13 @@ export function Lavagem() {
                                 </div>
                                 <div className="servico-footer">
                                   <span className="categoria">{servico.categoria}</span>
+                                  <button 
+                                    className={`btn-pago ${servico.pago ? 'pago' : 'nao-pago'}`}
+                                    onClick={() => updatePago(servico.id, servico.pago)}
+                                    title={servico.pago ? 'Marcar como não pago' : 'Marcar como pago'}
+                                  >
+                                    {servico.pago ? '✓ Pago' : '✕ Não pago'}
+                                  </button>
                                   <button 
                                     className="btn-delete-small" 
                                     onClick={() => handleDeleteLavagem(servico.id)}

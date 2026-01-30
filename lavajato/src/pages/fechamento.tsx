@@ -4,8 +4,6 @@ import { supabase } from '../services/supabaseClient'
 import { MdAttachMoney, MdDelete } from 'react-icons/md'
 import { IoClose } from 'react-icons/io5'
 
-/* ==================== TIPOS ==================== */
-
 type Despesa = {
   id: string
   descricao: string
@@ -18,159 +16,153 @@ type ConfirmacaoDel = {
   id: string | null
 }
 
-/* ==================== COMPONENTE PRINCIPAL ==================== */
-
 export function Fechamento() {
-  // Estados de dados
-  const [despesas, setDespesas] = useState<Despesa[]>([])
+  const dataFechamento = new Date().toISOString().split('T')[0]
 
-  // Estados de campos do fechamento
-  const [dinheroMaquina, setDinheroMaquina] = useState('')
+  /* ==================== ESTADOS ==================== */
+
+  const [despesas, setDespesas] = useState<Despesa[]>([])
+  const [entradasDia, setEntradasDia] = useState(0)
+  const [maquinapix, setMaquinapix] = useState('')
   const [dinheiro, setDinheiro] = useState('')
   const [cortesias, setCortesias] = useState('')
   const [empresas, setEmpresas] = useState('')
   const [despesasExtras, setDespesasExtras] = useState('')
   const [descricaoDespesa, setDescricaoDespesa] = useState('')
 
-  // Estados de UI
-  const [resultadoFechamento, setResultadoFechamento] = useState<{ total: number; tipo: 'positivo' | 'negativo' } | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [confirmacaoDel, setConfirmacaoDel] = useState<ConfirmacaoDel>({ mostrar: false, id: null })
-  const dataFechamento = new Date().toISOString().split('T')[0]
+  const [resultadoFechamento, setResultadoFechamento] = useState<{
+    total: number
+    tipo: 'positivo' | 'negativo'
+  } | null>(null)
 
-  // Calcular despesasExtrasNum uma única vez
+  const [error, setError] = useState<string | null>(null)
+  const [confirmacaoDel, setConfirmacaoDel] = useState<ConfirmacaoDel>({
+    mostrar: false,
+    id: null
+  })
+
   const despesasExtrasNum = parseFloat(despesasExtras) || 0
 
-  /* ==================== FETCH DE DESPESAS ==================== */
+  /* ==================== FETCH RECEITA DO DIA ==================== */
 
   useEffect(() => {
-    const fetchDespesas = async () => {
-      try {
-        const dataInicio = new Date(dataFechamento)
-        const dataFim = new Date(dataFechamento)
-        dataInicio.setHours(0, 0, 0, 0)
-        dataFim.setHours(23, 59, 59, 999)
+    const fetchReceitaDia = async () => {
+      const { data, error } = await supabase
+        .from('receitadia')
+        .select('entradas')
+        .eq('data', dataFechamento)
+        .single()
 
-        const { data, error: err } = await supabase
-          .from('despesas')
-          .select('*')
-          .gte('created_at', dataInicio.toISOString())
-          .lte('created_at', dataFim.toISOString())
-          .order('created_at', { ascending: false })
-
-        if (err) throw err
-        setDespesas(data || [])
-      } catch (error) {
-        console.error('Erro ao carregar despesas:', error)
+      if (error) {
+        console.error(error)
+        setEntradasDia(0)
+        return
       }
+
+      setEntradasDia(data?.entradas || 0)
     }
 
+    const fetchDespesas = async () => {
+      const inicio = new Date(dataFechamento)
+      inicio.setHours(0, 0, 0, 0)
+
+      const fim = new Date(dataFechamento)
+      fim.setHours(23, 59, 59, 999)
+
+      const { data, error } = await supabase
+        .from('despesas')
+        .select('*')
+        .gte('created_at', inicio.toISOString())
+        .lte('created_at', fim.toISOString())
+        .order('created_at', { ascending: false })
+
+      if (!error) setDespesas(data || [])
+    }
+
+    fetchReceitaDia()
     fetchDespesas()
   }, [dataFechamento])
 
-  /* ==================== FUNÇÕES DE CÁLCULO ==================== */
+  /* ==================== CÁLCULOS ==================== */
 
   const calcularTotais = () => {
-    const totalDespesasRegistradas = despesas.reduce((sum, d) => sum + (d.valor || 0), 0)
-
-    const dinheroMaquinaNum = parseFloat(dinheroMaquina) || 0
-    const dinheiroNum = parseFloat(dinheiro) || 0
     const cortesiasNum = parseFloat(cortesias) || 0
     const empresasNum = parseFloat(empresas) || 0
-    const despesasExtrasNumLocal = parseFloat(despesasExtras) || 0
+    const maquinapixNum = parseFloat(maquinapix) || 0
+    const dinheiroNum = parseFloat(dinheiro) || 0
 
-    const totalCaixa = dinheroMaquinaNum + dinheiroNum
-    const totalDespesasGeral = totalDespesasRegistradas + despesasExtrasNumLocal
-    const caixaImediato = totalCaixa - cortesiasNum - totalDespesasGeral
+    const despesasRegistradas = despesas.reduce(
+      (sum, d) => sum + d.valor,
+      0
+    )
+
+    const totalDespesas = despesasRegistradas + despesasExtrasNum
+
+    const caixaImediato =
+      entradasDia - dinheiroNum - maquinapixNum - cortesiasNum - totalDespesas
+
     const caixaTotal = caixaImediato + empresasNum
 
     return {
-      dinheroMaquina: dinheroMaquinaNum,
-      dinheiro: dinheiroNum,
-      totalCaixa,
-      despesasExtras: despesasExtrasNumLocal,
-      totalDespesasRegistradas,
-      totalDespesasGeral,
-      cortesias: cortesiasNum,
-      empresas: empresasNum,
+      despesasRegistradas,
+      totalDespesas,
       caixaImediato,
-      caixaTotal
+      maquinapix: maquinapixNum,
+      dinheiro: dinheiroNum,
+      caixaTotal,
+      cortesias: cortesiasNum,
+      empresas: empresasNum
     }
   }
 
   const totais = calcularTotais()
 
-  /* ==================== FUNÇÃO DE DELETAR SAÍDA ==================== */
-
-  const handleDeleteDespesa = async (id: string) => {
-    try {
-      const { error: err } = await supabase
-        .from('despesas')
-        .delete()
-        .eq('id', id)
-
-      if (err) throw err
-
-      setDespesas(despesas.filter(d => d.id !== id))
-      setConfirmacaoDel({ mostrar: false, id: null })
-    } catch (error) {
-      console.error('Erro ao deletar despesa:', error)
-      alert('Erro ao remover saída')
-    }
-  }
-
-  /* ==================== FUNÇÃO DE FAZER FECHAMENTO ==================== */
+  /* ==================== FECHAMENTO ==================== */
 
   const handleFazerFechamento = async () => {
     setError(null)
-    
-    try {
-      // Validação: verificar se há valores inseridos
-      if (totais.totalCaixa === 0 && totais.caixaTotal === 0) {
-        setError('Insira pelo menos um valor para fazer o fechamento')
-        return
-      }
 
-      // Validação: se houver despesa extra, deve ter descrição
-      if (!descricaoDespesa && despesasExtrasNum > 0) {
-        setError('Por favor, insira uma descrição para a despesa extra')
-        return
-      }
-
-      // Se houver despesa extra, adicionar à tabela
-      if (despesasExtrasNum > 0 && descricaoDespesa) {
-        const { error: insertError } = await supabase
-          .from('despesas')
-          .insert({
-            descricao: descricaoDespesa,
-            valor: despesasExtrasNum,
-            created_at: new Date(dataFechamento).toISOString()
-          })
-
-        if (insertError) throw insertError
-        setDespesasExtras('')
-        setDescricaoDespesa('')
-      }
-
-      const totalFinal = totais.caixaTotal
-      const tipo = totalFinal >= 0 ? 'positivo' : 'negativo'
-
-      setResultadoFechamento({ total: totalFinal, tipo })
-
-      // Reset campos após 2 segundos
-      setTimeout(() => {
-        setDinheroMaquina('')
-        setDinheiro('')
-        setCortesias('')
-        setEmpresas('')
-        setDespesasExtras('')
-        setDescricaoDespesa('')
-        setResultadoFechamento(null)
-      }, 2000)
-    } catch (error) {
-      console.error('Erro ao fazer fechamento:', error)
-      setError('Erro ao fazer fechamento. Tente novamente.')
+    if (entradasDia === 0) {
+      setError('Não há entradas registradas para este dia')
+      return
     }
+
+    if (!descricaoDespesa && despesasExtrasNum > 0) {
+      setError('Informe a descrição da despesa extra')
+      return
+    }
+
+    if (despesasExtrasNum > 0) {
+      await supabase.from('despesas').insert({
+        descricao: descricaoDespesa,
+        valor: despesasExtrasNum,
+        created_at: new Date().toISOString()
+      })
+    }
+
+    const tipo = totais.caixaTotal >= 0 ? 'positivo' : 'negativo'
+
+    setResultadoFechamento({
+      total: totais.caixaTotal,
+      tipo
+    })
+
+    // Reset após 2 segundos
+    setTimeout(() => {
+      setCortesias('')
+      setEmpresas('')
+      setDespesasExtras('')
+      setDescricaoDespesa('')
+      setResultadoFechamento(null)
+    }, 2000)
+  }
+
+  /* ==================== DELETE ==================== */
+
+  const handleDeleteDespesa = async (id: string) => {
+    await supabase.from('despesas').delete().eq('id', id)
+    setDespesas(despesas.filter(d => d.id !== id))
+    setConfirmacaoDel({ mostrar: false, id: null })
   }
 
   /* ==================== RENDER ==================== */
@@ -194,31 +186,36 @@ export function Fechamento() {
 
       <div className="fechamento-container">
         <div className="fechamento-grid-single">
-          {/* Seção: Campos de Dinheiro e Ajustes */}
           <div className="fechamento-section">
-            <h2>Entrada de Caixa</h2>
+            <h2>Entradas do Dia</h2>
 
-            {/* Card Dinheiro Máquina/PIX */}
+            <div className="resumo-card destaque">
+              <div className="resumo-header">
+                <h3>Receita Bruta</h3>
+              </div>
+              <div className="valor-principal">R$ {entradasDia.toFixed(2)}</div>
+            </div>
+
+            <h2 style={{ marginTop: '32px' }}>Ajustes e Deduções</h2>
+
             <div className="ajuste-card">
               <label>
                 <span className="form-icon-wrapper">
                   <MdAttachMoney />
                 </span>
-                Dinheiro Máquina/PIX
+                Máquina/PIX
               </label>
               <input
                 type="number"
                 placeholder="0.00"
-                value={dinheroMaquina}
-                onChange={(e) => setDinheroMaquina(e.target.value)}
+                value={maquinapix}
+                onChange={e => setMaquinapix(e.target.value)}
                 step="0.01"
                 min="0"
                 className="ajuste-input"
               />
-              <span className="ajuste-descricao">Valor recebido em máquina ou PIX</span>
+              <span className="ajuste-descricao">Reduz o total final</span>
             </div>
-
-            {/* Card Dinheiro */}
             <div className="ajuste-card">
               <label>
                 <span className="form-icon-wrapper">
@@ -230,17 +227,13 @@ export function Fechamento() {
                 type="number"
                 placeholder="0.00"
                 value={dinheiro}
-                onChange={(e) => setDinheiro(e.target.value)}
+                onChange={e => setDinheiro(e.target.value)}
                 step="0.01"
                 min="0"
                 className="ajuste-input"
               />
-              <span className="ajuste-descricao">Valor recebido em dinheiro</span>
+              <span className="ajuste-descricao">Reduz o total final</span>
             </div>
-
-            <h2 style={{ marginTop: '32px' }}>Ajustes e Deduções</h2>
-
-            {/* Card Cortesias */}
             <div className="ajuste-card">
               <label>
                 <span className="form-icon-wrapper">
@@ -252,7 +245,7 @@ export function Fechamento() {
                 type="number"
                 placeholder="0.00"
                 value={cortesias}
-                onChange={(e) => setCortesias(e.target.value)}
+                onChange={e => setCortesias(e.target.value)}
                 step="0.01"
                 min="0"
                 className="ajuste-input"
@@ -260,7 +253,6 @@ export function Fechamento() {
               <span className="ajuste-descricao">Reduz o total final</span>
             </div>
 
-            {/* Card Empresas (A Receber) */}
             <div className="ajuste-card">
               <label>
                 <span className="form-icon-wrapper">
@@ -272,7 +264,7 @@ export function Fechamento() {
                 type="number"
                 placeholder="0.00"
                 value={empresas}
-                onChange={(e) => setEmpresas(e.target.value)}
+                onChange={e => setEmpresas(e.target.value)}
                 step="0.01"
                 min="0"
                 className="ajuste-input"
@@ -280,7 +272,6 @@ export function Fechamento() {
               <span className="ajuste-descricao">Não entra como caixa imediato</span>
             </div>
 
-            {/* Card Despesas Extras */}
             <div className="ajuste-card">
               <label>
                 <span className="form-icon-wrapper">
@@ -292,7 +283,7 @@ export function Fechamento() {
                 type="number"
                 placeholder="0.00"
                 value={despesasExtras}
-                onChange={(e) => setDespesasExtras(e.target.value)}
+                onChange={e => setDespesasExtras(e.target.value)}
                 step="0.01"
                 min="0"
                 className="ajuste-input"
@@ -301,14 +292,13 @@ export function Fechamento() {
                 type="text"
                 placeholder="Descrição da despesa"
                 value={descricaoDespesa}
-                onChange={(e) => setDescricaoDespesa(e.target.value)}
+                onChange={e => setDescricaoDespesa(e.target.value)}
                 className="ajuste-input descricao-input"
                 disabled={despesasExtrasNum === 0}
               />
               <span className="ajuste-descricao">Será adicionada às despesas do dia</span>
             </div>
 
-            {/* Card Saídas Registradas */}
             {despesas.length > 0 && (
               <div className="ajuste-card saidas-card">
                 <div className="saidas-header">
@@ -340,38 +330,37 @@ export function Fechamento() {
               </div>
             )}
 
-            {/* Card Resumo do Fechamento */}
             <div className="resumo-card">
               <div className="resumo-header">
                 <h3>Resumo do Fechamento</h3>
               </div>
 
               <div className="resumo-linha">
-                <span className="resumo-label">Máquina/PIX</span>
-                <span className="resumo-valor">R$ {totais.dinheroMaquina.toFixed(2)}</span>
-              </div>
-
-              <div className="resumo-linha">
-                <span className="resumo-label">Dinheiro</span>
-                <span className="resumo-valor">R$ {totais.dinheiro.toFixed(2)}</span>
+                <span className="resumo-label">Receita Bruta</span>
+                <span className="resumo-valor">R$ {entradasDia.toFixed(2)}</span>
               </div>
 
               <div className="resumo-linha separator"></div>
 
-              <div className="resumo-linha destaque">
-                <span className="resumo-label">Total Caixa</span>
-                <span className="resumo-valor">R$ {totais.totalCaixa.toFixed(2)}</span>
+              <div className="resumo-linha">
+                <span className="resumo-label">- Dinheiro</span>
+                <span className="resumo-valor negativo">- R$ {totais.dinheiro.toFixed(2)}</span>
+              </div>
+
+              <div className="resumo-linha">
+                <span className="resumo-label">- Máquina/PIX</span>
+                <span className="resumo-valor negativo">- R$ {totais.maquinapix.toFixed(2)}</span>
               </div>
 
               <div className="resumo-linha">
                 <span className="resumo-label">- Cortesias</span>
                 <span className="resumo-valor negativo">- R$ {totais.cortesias.toFixed(2)}</span>
               </div>
-
+            
               <div className="resumo-linha">
                 <span className="resumo-label">- Despesas</span>
                 <span className="resumo-valor negativo">
-                  - R$ {totais.totalDespesasGeral.toFixed(2)}
+                  - R$ {totais.totalDespesas.toFixed(2)}
                 </span>
               </div>
 
@@ -399,7 +388,6 @@ export function Fechamento() {
               </div>
             </div>
 
-            {/* Resultado do Fechamento */}
             {resultadoFechamento && (
               <div className={`resultado-fechamento ${resultadoFechamento.tipo}`}>
                 <p className="resultado-titulo">
@@ -411,9 +399,8 @@ export function Fechamento() {
               </div>
             )}
 
-            {/* Botão de Fazer Fechamento */}
-            <button 
-              className="btn-salvar-fechamento" 
+            <button
+              className="btn-salvar-fechamento"
               onClick={handleFazerFechamento}
               disabled={resultadoFechamento !== null}
             >
@@ -423,7 +410,6 @@ export function Fechamento() {
         </div>
       </div>
 
-      {/* Modal de Confirmação de Deleção */}
       {confirmacaoDel.mostrar && (
         <div className="confirmacao-modal-overlay" onClick={() => setConfirmacaoDel({ mostrar: false, id: null })}>
           <div className="confirmacao-modal" onClick={(e) => e.stopPropagation()}>
