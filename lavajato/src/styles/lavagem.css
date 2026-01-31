@@ -67,7 +67,11 @@
   font-weight: 700;
   border-bottom: none;
   text-align: center;
-  letter-spacin;
+  letter-spacing: 0.3px;
+}
+
+.servicos-list {
+  padding: 16px;
   max-height: 600px;
   overflow-y: auto;
   flex: 1;
@@ -88,14 +92,12 @@
 }
 
 .servicos-list::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8px;
+  background: #94a3b8;
 }
 
-.servicos-list::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-.servico-i2px solid #e2e8f0;
+.servico-item {
+  background-color: white;
+  border: 2px solid #e2e8f0;
   border-radius: 8px;
   padding: 14px 16px;
   margin-bottom: 12px;
@@ -166,9 +168,7 @@
   font-size: 12px;
   color: #94a3b8;
   text-align: center;
-  font-weight: 500
-  color: #9ca3af;
-  text-align: center;
+  font-weight: 500;
 }
 
 .btn-delete-small {

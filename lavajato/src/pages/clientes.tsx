@@ -12,6 +12,7 @@ type Cliente = {
   modelo: string
   ano_carro: string
   categoria: string
+  sexo: string
 }
 
 type FormData = {
@@ -22,6 +23,7 @@ type FormData = {
   ano_carro: string
   modelo: string
   categoria: string
+  sexo: string
 }
 
 export function Clientes() {
@@ -37,6 +39,7 @@ export function Clientes() {
     ano_carro: '',
     modelo: '',
     categoria: 'particular',
+    sexo: '',
   })
 
   const handleInputChange = (
@@ -78,6 +81,7 @@ export function Clientes() {
       ano_carro,
       modelo,
       categoria,
+      sexo,
     } = formData
 
     if (!nome || !telefone || !placa) {
@@ -95,6 +99,7 @@ export function Clientes() {
         modelo,
         ano_carro,
         categoria,
+        sexo,
         data_nascimento: data_nascimento || null,
       })
       .select('id')
@@ -117,6 +122,7 @@ export function Clientes() {
       ano_carro: '',
       modelo: '',
       categoria: 'particular',
+      sexo: '',
     })
 
     setShowForm(false)
@@ -187,6 +193,13 @@ export function Clientes() {
                 <option value="aplicativo">Aplicativo</option>
               </select>
 
+              <label htmlFor="sexo">Sexo</label>
+              <select id="sexo" value={formData.sexo} onChange={handleInputChange}>
+                <option value="">Selecione</option>
+                <option value="masculino">Masculino</option>
+                <option value="feminino">Feminino</option>
+              </select>
+
               <div className="form-buttons">
                 <button type="submit">Salvar</button>
                 <button
@@ -212,12 +225,12 @@ export function Clientes() {
             <p className="empty-message">Nenhum cliente cadastrado.</p>
           ) : (
             <div className="list-section">
-              <h2>Lista de Clientes</h2>
+              <h2>Lista de Clientes ({clientes.length})</h2>
               
               <div className="search-container">
                 <input
                   type="text"
-                  placeholder="Pesquisar por nome, telefone ou placa..."
+                  placeholder="Pesquisar por nome, telefone, placa ou categoria..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="search-input"
@@ -229,7 +242,8 @@ export function Clientes() {
                   .filter(cliente =>
                     cliente.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     cliente.telefone.includes(searchTerm) ||
-                    cliente.placa.toUpperCase().includes(searchTerm.toUpperCase())
+                    cliente.placa.toUpperCase().includes(searchTerm.toUpperCase()) ||
+                    cliente.categoria.toLowerCase().includes(searchTerm.toLowerCase())
                   )
                   .map(cliente => (
                   <div key={cliente.id} className="cliente-card">
@@ -243,6 +257,7 @@ export function Clientes() {
                       <p><strong>Placa:</strong> {cliente.placa}</p>
                       <p><strong>Modelo:</strong> {cliente.modelo}</p>
                       <p><strong>Ano:</strong> {cliente.ano_carro}</p>
+                      <p><strong>Sexo:</strong> {cliente.sexo}</p>
                     </div>
                     <button
                       className="btn-delete"
