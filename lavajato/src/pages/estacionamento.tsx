@@ -1,7 +1,6 @@
 import '../App.css'
 import '../styles/forms.css'
 import '../styles/checkbox.css'
-
 import { useEffect, useState } from 'react'
 import { supabase } from '../services/supabaseClient'
 

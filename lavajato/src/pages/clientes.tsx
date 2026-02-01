@@ -30,6 +30,7 @@ export function Clientes() {
   const [showForm, setShowForm] = useState(false)
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [editingId, setEditingId] = useState<number | null>(null)
 
   const [formData, setFormData] = useState<FormData>({
     nome: '',
@@ -89,6 +90,44 @@ export function Clientes() {
       return
     }
 
+    // Se estiver editando
+    if (editingId !== null) {
+      const { error } = await supabase
+        .from('clientes')
+        .update({
+          nome,
+          telefone,
+          placa,
+          modelo,
+          ano_carro,
+          categoria,
+          sexo,
+          data_nascimento: data_nascimento || null,
+        })
+        .eq('id', editingId)
+
+      if (error) {
+        console.error(error)
+        alert('Erro ao atualizar cliente')
+        return
+      }
+
+      await loadInitialData()
+      setShowForm(false)
+      setEditingId(null)
+      setFormData({
+        nome: '',
+        telefone: '',
+        data_nascimento: '',
+        placa: '',
+        ano_carro: '',
+        modelo: '',
+        categoria: 'particular',
+        sexo: '',
+      })
+      return
+    }
+
     // 1️⃣ Cria cliente
     const { data: cliente, error: clienteErr } = await supabase
       .from('clientes')
@@ -145,6 +184,36 @@ export function Clientes() {
     setClientes(prev => prev.filter(c => c.id !== id))
   }
 
+  const handleEditCliente = (cliente: Cliente) => {
+    setEditingId(cliente.id)
+    setFormData({
+      nome: cliente.nome,
+      telefone: cliente.telefone,
+      data_nascimento: cliente.data_nascimento || '',
+      placa: cliente.placa,
+      ano_carro: cliente.ano_carro,
+      modelo: cliente.modelo,
+      categoria: cliente.categoria,
+      sexo: cliente.sexo,
+    })
+    setShowForm(true)
+  }
+
+  const handleCancelEdit = () => {
+    setShowForm(false)
+    setEditingId(null)
+    setFormData({
+      nome: '',
+      telefone: '',
+      data_nascimento: '',
+      placa: '',
+      ano_carro: '',
+      modelo: '',
+      categoria: 'particular',
+      sexo: '',
+    })
+  }
+
   return (
     <div className="page-wrapper">
       <header className="page-header">
@@ -156,7 +225,7 @@ export function Clientes() {
         <div className="content-container">
           {showForm && (
             <form onSubmit={handleAddCliente} className="form-card">
-              <h2>Novo Cliente</h2>
+              <h2>{editingId ? 'Editar Cliente' : 'Novo Cliente'}</h2>
 
               <label htmlFor="nome">Nome</label>
               <input id="nome" value={formData.nome} onChange={handleInputChange} />
@@ -201,11 +270,11 @@ export function Clientes() {
               </select>
 
               <div className="form-buttons">
-                <button type="submit">Salvar</button>
+                <button type="submit">{editingId ? 'Atualizar' : 'Salvar'}</button>
                 <button
                   type="button"
                   className="btn-cancel"
-                  onClick={() => setShowForm(false)}
+                  onClick={handleCancelEdit}
                 >
                   Cancelar
                 </button>
@@ -259,12 +328,20 @@ export function Clientes() {
                       <p><strong>Ano:</strong> {cliente.ano_carro}</p>
                       <p><strong>Sexo:</strong> {cliente.sexo}</p>
                     </div>
-                    <button
-                      className="btn-delete"
-                      onClick={() => handleDeleteCliente(cliente.id)}
-                    >
-                      Remover
-                    </button>
+                    <div className="cliente-buttons">
+                      <button
+                        className="btn-edit"
+                        onClick={() => handleEditCliente(cliente)}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleDeleteCliente(cliente.id)}
+                      >
+                        Remover
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

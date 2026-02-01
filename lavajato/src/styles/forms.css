@@ -156,9 +156,14 @@ form button:disabled {
   transform: translateY(0);
 }
 
+.cliente-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-edit,
 .btn-delete {
   padding: 8px 16px;
-  background-color: #ef4444;
   color: white;
   border: none;
   border-radius: 6px;
@@ -166,6 +171,20 @@ form button:disabled {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  flex: 1;
+}
+
+.btn-edit {
+  background-color: #0a34f1;
+}
+
+.btn-edit:hover {
+  background-color: #0828c1;
+  box-shadow: 0 4px 12px rgba(10, 52, 241, 0.3);
+}
+
+.btn-delete {
+  background-color: #ef4444;
 }
 
 .btn-delete:hover {

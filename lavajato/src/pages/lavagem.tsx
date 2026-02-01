@@ -154,6 +154,7 @@ export function Lavagem() {
               <option value="particular">Particular</option>
               <option value="aplicativo">Aplicativo</option>
               <option value="militar">Militar</option>
+              <option value="empresa">Empresa</option>
             </select>
 
             <input 
