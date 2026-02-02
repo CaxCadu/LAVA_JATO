@@ -27,7 +27,7 @@ export function Estacionamento() {
   useEffect(() => {
     const fetchEstacionamentos = async () => {
       const { data, error } = await supabase
-        .from('estacionamento')
+        .from('view_estacionamentos_dia')
         .select('*')
         .order('created_at', { ascending: false })
 

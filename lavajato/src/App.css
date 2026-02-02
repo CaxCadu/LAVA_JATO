@@ -234,10 +234,11 @@ html, body, #root {
 }
 
 .card-header {
-    background: linear-gradient(90deg, #0b3b91 0%, #063079 100%);
+    background: linear-gradient(90deg, #0045bb 0%, #063079 100%);
     color: AliceBlue;
     padding: 20px;
     border-bottom: 4px solid rgba(4, 30, 90, 0.28);
+    border-radius: 16px;
 }
 
 .card-header h2 {
@@ -299,7 +300,7 @@ html, body, #root {
 /* ==================== CARDS ESPECIAIS ==================== */
 
 .receita-card {
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #fafbff;
 }
 
 .summary-card {

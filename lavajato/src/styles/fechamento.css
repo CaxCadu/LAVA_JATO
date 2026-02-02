@@ -2,91 +2,110 @@
 
 .fechamento-container {
   padding: 20px;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  min-height: 100vh;
-}
-
-.fechamento-grid-single {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  max-width: 600px;
+  max-width: 1400px;
   margin: 0 auto;
+  min-height: calc(100vh - 120px);
 }
 
-.fechamento-grid-single {
+.fechamento-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 30px;
-  max-width: 600px;
-  margin: 0 auto;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 24px;
 }
 
-/* ==================== SEÇÕES ==================== */
-
-.fechamento-section {
+.fechamento-column {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
-.fechamento-section h2 {
+/* ==================== CARDS ==================== */
+
+.card {
+  background: rgb(224, 230, 236);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.card h2 {
   font-size: 18px;
   font-weight: 600;
-  color: #2c3e50;
+  color: #1a1a1a;
   margin: 0;
-  padding: 0 5px;
-  border-left: 4px solid #3498db;
-  padding-left: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
 }
 
-/* ==================== CARD DE SAÍDAS REGISTRADAS ==================== */
+/* ==================== RECEITA CARD ==================== */
 
-.saidas-card {
-  border: 1px solid #e74c3c !important;
+.receita-card {
+  background: aliceblue;
+  color: rgb(0, 0, 0);
 }
 
-.saidas-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+.receita-card h2 {
+  color: rgba(0, 0, 0, 0.9);
+  border-bottom-color: rgba(255, 255, 255, 0.2);
 }
 
-.saidas-header label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  color: #2c3e50;
-  font-size: 14px;
+.valor-grande {
+  font-size: 42px;
+  font-weight: 700;
+  text-align: center;
+  padding: 20px 0;
+  letter-spacing: -1px;
 }
 
-.saidas-count {
-  background: #e74c3c;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
+.valor-grande.positivo {
+  color: #10b981;
 }
 
-.saidas-lista {
+.valor-grande.negativo {
+  color: #ef4444;
+}
+
+/* ==================== DESPESAS CARD ==================== */
+
+.despesas-card {
+  border: 1px solid #fee2e2;
+  background: #fff9f8;
+}
+
+.empty-state {
+  text-align: center;
+  color: #9ca3af;
+  padding: 32px 0;
+  font-style: italic;
+}
+
+.lista-saidas {
+  list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 200px;
-  overflow-y: auto;
 }
 
 .saida-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  background: #fef5f5;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: white;
+  border-left: 3px solid #ef4444;
   border-radius: 6px;
-  border-left: 3px solid #e74c3c;
+  transition: all 0.2s ease;
+}
+
+.saida-item:hover {
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1);
+  transform: translateX(2px);
 }
 
 .saida-info {
@@ -98,34 +117,228 @@
 
 .saida-descricao {
   font-weight: 500;
-  color: #2c3e50;
+  color: #1a1a1a;
   font-size: 14px;
 }
 
 .saida-valor {
+  font-size: 13px;
+  color: #ef4444;
   font-weight: 600;
-  color: #e74c3c;
-  font-size: 14px;
 }
 
-.btn-saida-delete {
-  background: #e74c3c;
-  color: white;
+.btn-remover {
+  background: #fee2e2;
   border: none;
-  padding: 6px 10px;
-  border-radius: 4px;
+  color: #ef4444;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  font-size: 20px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  transition: all 0.2s;
-  margin-left: 10px;
+  transition: all 0.2s ease;
+  padding: 0;
 }
 
-.btn-saida-delete:hover {
-  background: #c0392b;
-  transform: scale(1.05);
+.btn-remover:hover {
+  background: #fecaca;
+  color: #dc2626;
+}
+
+/* ==================== AJUSTES CARD ==================== */
+
+.ajustes-card {
+  border: 1px solid #dbeafe;
+  background: #f0f9ff;
+}
+
+.ajustes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.ajuste-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ajuste-card label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: #667eea;
+  font-size: 16px;
+}
+
+.ajuste-card input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.ajuste-card input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.ajuste-card input:disabled {
+  background: #f3f4f6;
+  color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.ajuste-card.extra {
+  grid-column: 1 / -1;
+}
+
+.input-descricao {
+  margin-top: 4px;
+}
+
+/* ==================== RESULTADO CARD ==================== */
+
+.resultado-card {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.resumo-linhas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.resumo-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  padding: 8px 0;
+}
+
+.resumo-linha span:first-child {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.resumo-linha .valor {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.resumo-linha .valor.positivo {
+  color: #10b981;
+}
+
+.resumo-linha .valor.negativo {
+  color: #ef4444;
+}
+
+.resumo-linha .valor.destaque {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.resumo-linha.total {
+  padding-top: 12px;
+}
+
+.resumo-linha.total span:first-child {
+  color: #1a1a1a;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.resumo-separator {
+  height: 1px;
+  background: #d1d5db;
+  margin: 8px 0;
+}
+
+/* ==================== RESULTADO BANNER ==================== */
+
+.resultado-banner {
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  color: white;
+  margin-top: 12px;
+  animation: slideDown 0.3s ease;
+}
+
+.resultado-banner.positivo {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.resultado-banner.negativo {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.resultado-banner p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.resultado-banner .resultado-valor {
+  font-size: 24px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== BOTÕES ==================== */
+
+.btn-fazer-fechamento {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+
+.btn-fazer-fechamento:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-fazer-fechamento:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ==================== MODAL DE CONFIRMAÇÃO ==================== */
@@ -141,25 +354,27 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(2px);
 }
 
 .confirmacao-modal {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  padding: 24px;
   max-width: 400px;
   width: 90%;
-  animation: slideIn 0.3s ease-out;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: scaleIn 0.2s ease;
 }
 
-@keyframes slideIn {
+@keyframes scaleIn {
   from {
-    transform: translateY(-30px);
     opacity: 0;
+    transform: scale(0.95);
   }
   to {
-    transform: translateY(0);
     opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -167,302 +382,131 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #ecf0f1;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #f0f0f0;
 }
 
 .confirmacao-header h3 {
   margin: 0;
   font-size: 18px;
-  font-weight: 600;
-  color: #2c3e50;
+  color: #1a1a1a;
 }
 
 .confirmacao-close {
   background: none;
   border: none;
   font-size: 24px;
+  color: #d1d5db;
   cursor: pointer;
-  color: #7f8c8d;
-  transition: color 0.2s;
+  padding: 0;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.2s ease;
 }
 
 .confirmacao-close:hover {
-  color: #e74c3c;
+  color: #1a1a1a;
 }
 
 .confirmacao-texto {
-  padding: 20px;
-  margin: 0;
-  color: #2c3e50;
-  font-size: 16px;
+  color: #6b7280;
+  font-size: 14px;
   line-height: 1.5;
+  margin-bottom: 20px;
 }
 
 .confirmacao-buttons {
   display: flex;
   gap: 12px;
-  padding: 20px;
-  border-top: 1px solid #ecf0f1;
   justify-content: flex-end;
 }
 
 .btn-cancelar,
 .btn-confirmar {
-  padding: 10px 20px;
+  padding: 10px 18px;
   border: none;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .btn-cancelar {
-  background: #ecf0f1;
-  color: #2c3e50;
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 .btn-cancelar:hover {
-  background: #bdc3c7;
+  background: #e5e7eb;
+  color: #1a1a1a;
 }
 
 .btn-confirmar {
-  background: #e74c3c;
+  background: #ef4444;
   color: white;
 }
 
 .btn-confirmar:hover {
-  background: #c0392b;
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
 }
 
-/* ==================== CARDS DE AJUSTES ==================== */
+/* ==================== ERROR MESSAGE ==================== */
 
-.ajuste-card {
-  background: white;
-  border-radius: 8px;
+.error-message {
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #ecf0f1;
-}
-
-.ajuste-card label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-
-.form-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  color: #3498db;
-}
-
-.ajuste-input {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #bdc3c7;
+  background: #fee2e2;
+  border-left: 4px solid #ef4444;
   border-radius: 6px;
-  font-size: 14px;
-  margin-bottom: 8px;
-  box-sizing: border-box;
-  transition: border-color 0.2s;
+  margin-bottom: 20px;
 }
 
-.ajuste-input:focus {
-  outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
-
-.ajuste-input:disabled {
-  background: #ecf0f1;
-  cursor: not-allowed;
-  color: #95a5a6;
-}
-
-.descricao-input {
-  margin-bottom: 8px;
-}
-
-.ajuste-descricao {
-  font-size: 12px;
-  color: #7f8c8d;
-  display: block;
-  margin-top: 4px;
-  font-style: italic;
-}
-
-/* ==================== CARD DE RESUMO ==================== */
-
-.resumo-card {
-  background: #034180;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  color: white;
-  margin-top: 10px;
-}
-
-.resumo-header {
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.resumo-header h3 {
+.error-message p {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.resumo-linha {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
+  color: #991b1b;
   font-size: 14px;
-}
-
-.resumo-label {
   font-weight: 500;
 }
 
-.resumo-valor {
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.resumo-valor.negativo {
-  color: #ffcccc;
-}
-
-.resumo-valor.positivo {
-  color: #99ff99;
-}
-
-.resumo-valor.highlight {
-  font-size: 20px;
-  color: #fff;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.resumo-linha.separator {
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 0;
-  margin: 8px 0;
-}
-
-.resumo-linha.destaque {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 10px 12px;
-  border-radius: 6px;
-  margin: 8px 0;
-}
-
-.resumo-linha.total {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 12px 12px;
-  border-radius: 6px;
-  margin-top: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* ==================== BOTÃO SALVAR ==================== */
-
-.btn-salvar-fechamento {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-  color: white;
-  border: none;
-  padding: 14px 20px;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
-  width: 100%;
-  margin-top: 10px;
-}
-
-.btn-salvar-fechamento:hover:not(:disabled) {
-  background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(39, 174, 96, 0.4);
-}
-
-.btn-salvar-fechamento:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.btn-salvar-fechamento:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* ==================== RESULTADO DO FECHAMENTO ==================== */
-
-.resultado-fechamento {
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  text-align: center;
-  animation: slideDown 0.4s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.resultado-fechamento.positivo {
-  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
-  border: 2px solid #1e8449;
-  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
-}
-
-.resultado-fechamento.negativo {
-  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-  border: 2px solid #a93226;
-  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
-}
-
-.resultado-titulo {
-  margin: 0 0 8px 0;
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.resultado-valor {
-  margin: 0;
-  color: white;
-  font-size: 32px;
-  font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-/* ==================== MODAL DE CONFIRMAÇÃO ==================== */
-
-/* REMOVIDO - Confirmação de deleção não é mais necessária */
+/* ==================== RESPONSIVO ==================== */
 
 @media (max-width: 1024px) {
-  .fechamento-grid-single {
-    gap: 20px;
+  .fechamento-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ajustes-grid {
+    grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 640px) {
+  .fechamento-container {
+    padding: 12px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+
+  .valor-grande {
+    font-size: 32px;
+  }
+
+  .saida-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .btn-remover {
+    align-self: flex-end;
+  }
+}
+

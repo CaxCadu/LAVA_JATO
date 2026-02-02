@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import '../styles/fechamento.css'
 import { supabase } from '../services/supabaseClient'
-import { MdAttachMoney, MdDelete } from 'react-icons/md'
+import { MdAttachMoney } from 'react-icons/md'
 import { IoClose } from 'react-icons/io5'
+
+/* ==================== TIPOS ==================== */
 
 type Despesa = {
   id: string
@@ -16,6 +18,19 @@ type ConfirmacaoDel = {
   id: string | null
 }
 
+/* ==================== HELPERS ==================== */
+
+const obterIntervaloDia = (data: string) => {
+  const [ano, mes, dia] = data.split('-').map(Number)
+
+  const inicio = new Date(ano, mes - 1, dia, 0, 0, 0, 0)
+  const fim = new Date(ano, mes - 1, dia, 23, 59, 59, 999)
+
+  return { inicio, fim }
+}
+
+/* ==================== COMPONENTE ==================== */
+
 export function Fechamento() {
   const dataFechamento = new Date().toISOString().split('T')[0]
 
@@ -23,6 +38,7 @@ export function Fechamento() {
 
   const [despesas, setDespesas] = useState<Despesa[]>([])
   const [entradasDia, setEntradasDia] = useState(0)
+
   const [maquinapix, setMaquinapix] = useState('')
   const [dinheiro, setDinheiro] = useState('')
   const [cortesias, setCortesias] = useState('')
@@ -43,7 +59,7 @@ export function Fechamento() {
 
   const despesasExtrasNum = parseFloat(despesasExtras) || 0
 
-  /* ==================== FETCH RECEITA DO DIA ==================== */
+  /* ==================== FETCH DADOS DO DIA ==================== */
 
   useEffect(() => {
     const fetchReceitaDia = async () => {
@@ -54,7 +70,7 @@ export function Fechamento() {
         .single()
 
       if (error) {
-        console.error(error)
+        console.error('Erro receita dia:', error)
         setEntradasDia(0)
         return
       }
@@ -62,12 +78,8 @@ export function Fechamento() {
       setEntradasDia(data?.entradas || 0)
     }
 
-    const fetchDespesas = async () => {
-      const inicio = new Date(dataFechamento)
-      inicio.setHours(0, 0, 0, 0)
-
-      const fim = new Date(dataFechamento)
-      fim.setHours(23, 59, 59, 999)
+    const buscarDespesasNoDia = async () => {
+      const { inicio, fim } = obterIntervaloDia(dataFechamento)
 
       const { data, error } = await supabase
         .from('despesas')
@@ -76,11 +88,17 @@ export function Fechamento() {
         .lte('created_at', fim.toISOString())
         .order('created_at', { ascending: false })
 
-      if (!error) setDespesas(data || [])
+      if (error) {
+        console.error('Erro despesas dia:', error)
+        setDespesas([])
+        return
+      }
+
+      setDespesas(data as Despesa[])
     }
 
     fetchReceitaDia()
-    fetchDespesas()
+    buscarDespesasNoDia()
   }, [dataFechamento])
 
   /* ==================== CÁLCULOS ==================== */
@@ -147,7 +165,6 @@ export function Fechamento() {
       tipo
     })
 
-    // Reset após 2 segundos
     setTimeout(() => {
       setCortesias('')
       setEmpresas('')
@@ -173,7 +190,7 @@ export function Fechamento() {
         <div className="header-content">
           <div>
             <h1>Fechamento</h1>
-            <p className="subtitle">Consolidar receitas, despesas e entradas do dia</p>
+            <p className="subtitle">Consolidar receitas e despesas do dia</p>
           </div>
         </div>
       </header>
@@ -185,227 +202,160 @@ export function Fechamento() {
       )}
 
       <div className="fechamento-container">
-        <div className="fechamento-grid-single">
-          <div className="fechamento-section">
-            <h2>Entradas do Dia</h2>
-
-            <div className="resumo-card destaque">
-              <div className="resumo-header">
-                <h3>Receita Bruta</h3>
+        <div className="fechamento-grid">
+          {/* Coluna Esquerda */}
+          <div className="fechamento-column">
+            {/* Card Receita */}
+            <div className="card receita-card">
+              <h2>Receita do Dia</h2>
+              <div className="valor-grande positivo">
+                R$ {entradasDia.toFixed(2)}
               </div>
-              <div className="valor-principal">R$ {entradasDia.toFixed(2)}</div>
             </div>
 
-            <h2 style={{ marginTop: '32px' }}>Ajustes e Deduções</h2>
-
-            <div className="ajuste-card">
-              <label>
-                <span className="form-icon-wrapper">
-                  <MdAttachMoney />
-                </span>
-                Máquina/PIX
-              </label>
-              <input
-                type="number"
-                placeholder="0.00"
-                value={maquinapix}
-                onChange={e => setMaquinapix(e.target.value)}
-                step="0.01"
-                min="0"
-                className="ajuste-input"
-              />
-              <span className="ajuste-descricao">Reduz o total final</span>
-            </div>
-            <div className="ajuste-card">
-              <label>
-                <span className="form-icon-wrapper">
-                  <MdAttachMoney />
-                </span>
-                Dinheiro
-              </label>
-              <input
-                type="number"
-                placeholder="0.00"
-                value={dinheiro}
-                onChange={e => setDinheiro(e.target.value)}
-                step="0.01"
-                min="0"
-                className="ajuste-input"
-              />
-              <span className="ajuste-descricao">Reduz o total final</span>
-            </div>
-            <div className="ajuste-card">
-              <label>
-                <span className="form-icon-wrapper">
-                  <MdAttachMoney />
-                </span>
-                Cortesias
-              </label>
-              <input
-                type="number"
-                placeholder="0.00"
-                value={cortesias}
-                onChange={e => setCortesias(e.target.value)}
-                step="0.01"
-                min="0"
-                className="ajuste-input"
-              />
-              <span className="ajuste-descricao">Reduz o total final</span>
-            </div>
-
-            <div className="ajuste-card">
-              <label>
-                <span className="form-icon-wrapper">
-                  <MdAttachMoney />
-                </span>
-                Empresas (A Receber)
-              </label>
-              <input
-                type="number"
-                placeholder="0.00"
-                value={empresas}
-                onChange={e => setEmpresas(e.target.value)}
-                step="0.01"
-                min="0"
-                className="ajuste-input"
-              />
-              <span className="ajuste-descricao">Não entra como caixa imediato</span>
-            </div>
-
-            <div className="ajuste-card">
-              <label>
-                <span className="form-icon-wrapper">
-                  <MdAttachMoney />
-                </span>
-                Despesas Extras
-              </label>
-              <input
-                type="number"
-                placeholder="0.00"
-                value={despesasExtras}
-                onChange={e => setDespesasExtras(e.target.value)}
-                step="0.01"
-                min="0"
-                className="ajuste-input"
-              />
-              <input
-                type="text"
-                placeholder="Descrição da despesa"
-                value={descricaoDespesa}
-                onChange={e => setDescricaoDespesa(e.target.value)}
-                className="ajuste-input descricao-input"
-                disabled={despesasExtrasNum === 0}
-              />
-              <span className="ajuste-descricao">Será adicionada às despesas do dia</span>
-            </div>
-
-            {despesas.length > 0 && (
-              <div className="ajuste-card saidas-card">
-                <div className="saidas-header">
-                  <label style={{ margin: 0 }}>
-                    <span className="form-icon-wrapper">
-                      <MdAttachMoney />
-                    </span>
-                    Saídas Registradas
-                  </label>
-                  <span className="saidas-count">{despesas.length}</span>
-                </div>
-                <div className="saidas-lista">
+            {/* Card Despesas */}
+            <div className="card despesas-card">
+              <h2>Despesas do Dia</h2>
+              {despesas.length === 0 ? (
+                <p className="empty-state">Nenhuma despesa registrada</p>
+              ) : (
+                <ul className="lista-saidas">
                   {despesas.map(d => (
-                    <div key={d.id} className="saida-item">
+                    <li key={d.id} className="saida-item">
                       <div className="saida-info">
                         <span className="saida-descricao">{d.descricao}</span>
                         <span className="saida-valor">R$ {d.valor.toFixed(2)}</span>
                       </div>
                       <button
-                        className="btn-saida-delete"
+                        className="btn-remover"
                         onClick={() => setConfirmacaoDel({ mostrar: true, id: d.id })}
-                        title="Remover saída"
+                        title="Remover despesa"
                       >
-                        <MdDelete />
+                        ×
                       </button>
-                    </div>
+                    </li>
                   ))}
-                </div>
-              </div>
-            )}
+                </ul>
+              )}
+            </div>
+          </div>
 
-            <div className="resumo-card">
-              <div className="resumo-header">
-                <h3>Resumo do Fechamento</h3>
-              </div>
-
-              <div className="resumo-linha">
-                <span className="resumo-label">Receita Bruta</span>
-                <span className="resumo-valor">R$ {entradasDia.toFixed(2)}</span>
-              </div>
-
-              <div className="resumo-linha separator"></div>
-
-              <div className="resumo-linha">
-                <span className="resumo-label">- Dinheiro</span>
-                <span className="resumo-valor negativo">- R$ {totais.dinheiro.toFixed(2)}</span>
-              </div>
-
-              <div className="resumo-linha">
-                <span className="resumo-label">- Máquina/PIX</span>
-                <span className="resumo-valor negativo">- R$ {totais.maquinapix.toFixed(2)}</span>
-              </div>
-
-              <div className="resumo-linha">
-                <span className="resumo-label">- Cortesias</span>
-                <span className="resumo-valor negativo">- R$ {totais.cortesias.toFixed(2)}</span>
-              </div>
-            
-              <div className="resumo-linha">
-                <span className="resumo-label">- Despesas</span>
-                <span className="resumo-valor negativo">
-                  - R$ {totais.totalDespesas.toFixed(2)}
-                </span>
+          {/* Coluna Direita */}
+          <div className="fechamento-column">
+            {/* Card Ajustes */}
+            <div className="card ajustes-card">
+              <h2>Ajustes</h2>
+              <div className="ajustes-grid">
+                {[
+                  ['Máquina / PIX', maquinapix, setMaquinapix],
+                  ['Dinheiro', dinheiro, setDinheiro],
+                  ['Cortesias', cortesias, setCortesias],
+                  ['Empresas', empresas, setEmpresas]
+                ].map(([label, value, setter]: any) => (
+                  <div className="ajuste-card" key={label}>
+                    <label>
+                      <span className="icon"><MdAttachMoney /></span>
+                      {label}
+                    </label>
+                    <input
+                      type="number"
+                      value={value}
+                      onChange={e => setter(e.target.value)}
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                    />
+                  </div>
+                ))}
               </div>
 
-              <div className="resumo-linha separator"></div>
-
-              <div className="resumo-linha destaque">
-                <span className="resumo-label">Caixa Imediato</span>
-                <span className={`resumo-valor ${totais.caixaImediato >= 0 ? 'positivo' : 'negativo'}`}>
-                  R$ {totais.caixaImediato.toFixed(2)}
-                </span>
-              </div>
-
-              <div className="resumo-linha">
-                <span className="resumo-label">+ A Receber (Empresas)</span>
-                <span className="resumo-valor positivo">+ R$ {totais.empresas.toFixed(2)}</span>
-              </div>
-
-              <div className="resumo-linha separator"></div>
-
-              <div className="resumo-linha total">
-                <span className="resumo-label">Total (Caixa + Empresas)</span>
-                <span className={`resumo-valor highlight ${totais.caixaTotal >= 0 ? 'positivo' : 'negativo'}`}>
-                  R$ {totais.caixaTotal.toFixed(2)}
-                </span>
+              <div className="ajuste-card extra">
+                <label>
+                  <span className="icon"><MdAttachMoney /></span>
+                  Despesa Extra
+                </label>
+                <input
+                  type="number"
+                  value={despesasExtras}
+                  onChange={e => setDespesasExtras(e.target.value)}
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                />
+                <input
+                  type="text"
+                  placeholder="Descrição da despesa"
+                  value={descricaoDespesa}
+                  onChange={e => setDescricaoDespesa(e.target.value)}
+                  disabled={despesasExtrasNum === 0}
+                  className="input-descricao"
+                />
               </div>
             </div>
 
-            {resultadoFechamento && (
-              <div className={`resultado-fechamento ${resultadoFechamento.tipo}`}>
-                <p className="resultado-titulo">
-                  {resultadoFechamento.tipo === 'positivo' ? '✓ Fechamento Positivo' : '⚠ Fechamento Negativo'}
-                </p>
-                <p className="resultado-valor">
-                  R$ {Math.abs(resultadoFechamento.total).toFixed(2)}
-                </p>
+            {/* Card Resultado */}
+            <div className="card resultado-card">
+              <h2>Resumo do Fechamento</h2>
+              <div className="resumo-linhas">
+                <div className="resumo-linha">
+                  <span>Receita Bruta</span>
+                  <span className="valor">R$ {entradasDia.toFixed(2)}</span>
+                </div>
+                <div className="resumo-linha">
+                  <span>- Dinheiro</span>
+                  <span className="valor negativo">- R$ {(parseFloat(dinheiro) || 0).toFixed(2)}</span>
+                </div>
+                <div className="resumo-linha">
+                  <span>- Máquina/PIX</span>
+                  <span className="valor negativo">- R$ {(parseFloat(maquinapix) || 0).toFixed(2)}</span>
+                </div>
+                <div className="resumo-linha">
+                  <span>- Cortesias</span>
+                  <span className="valor negativo">- R$ {(parseFloat(cortesias) || 0).toFixed(2)}</span>
+                </div>
+                <div className="resumo-linha">
+                  <span>- Despesas</span>
+                  <span className="valor negativo">- R$ {totais.totalDespesas.toFixed(2)}</span>
+                </div>
+                <div className="resumo-separator"></div>
+                <div className="resumo-linha">
+                  <span>Caixa Imediato</span>
+                  <span className={`valor destaque ${totais.caixaImediato >= 0 ? 'positivo' : 'negativo'}`}>
+                    R$ {totais.caixaImediato.toFixed(2)}
+                  </span>
+                </div>
+                <div className="resumo-linha">
+                  <span>+ Empresas</span>
+                  <span className="valor positivo">+ R$ {(parseFloat(empresas) || 0).toFixed(2)}</span>
+                </div>
+                <div className="resumo-separator"></div>
+                <div className="resumo-linha total">
+                  <span>Caixa Total</span>
+                  <span className={`valor destaque ${totais.caixaTotal >= 0 ? 'positivo' : 'negativo'}`}>
+                    R$ {totais.caixaTotal.toFixed(2)}
+                  </span>
+                </div>
               </div>
-            )}
 
-            <button
-              className="btn-salvar-fechamento"
-              onClick={handleFazerFechamento}
-              disabled={resultadoFechamento !== null}
-            >
-              Fazer Fechamento
-            </button>
+              {resultadoFechamento && (
+                <div className={`resultado-banner ${resultadoFechamento.tipo}`}>
+                  <p>
+                    {resultadoFechamento.tipo === 'positivo' ? '✓ Fechamento Positivo' : '⚠ Fechamento Negativo'}
+                  </p>
+                  <p className="resultado-valor">
+                    R$ {Math.abs(resultadoFechamento.total).toFixed(2)}
+                  </p>
+                </div>
+              )}
+
+              <button
+                className="btn-fazer-fechamento"
+                onClick={handleFazerFechamento}
+                disabled={resultadoFechamento !== null}
+              >
+                Fazer Fechamento
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -423,7 +373,7 @@ export function Fechamento() {
               </button>
             </div>
             <p className="confirmacao-texto">
-              Deseja remover esta saída? Esta ação não pode ser desfeita.
+              Deseja remover esta despesa? Esta ação não pode ser desfeita.
             </p>
             <div className="confirmacao-buttons">
               <button

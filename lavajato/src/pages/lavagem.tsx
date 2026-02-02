@@ -42,7 +42,7 @@ export function Lavagem() {
     else setLavadores((lavData as any) || [])
 
     const { data: lavsData, error: lavsErr } = await supabase
-      .from('lavagens')
+      .from('view_lavagens_dia')
       .select(`
         *,
         lavadores (
