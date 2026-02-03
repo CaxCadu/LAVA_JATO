@@ -47,7 +47,7 @@ export function Lavadores() {
         <h1>Lavadores</h1>
         <p className="subtitle">Gerencie os lavadores da empresa</p>
       </header>
-
+      
       <main className="page-content">
         <div className="content-container">
           {!showForm && (

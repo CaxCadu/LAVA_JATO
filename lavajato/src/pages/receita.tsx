@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import '../App.css'
 import '../styles/receita.css'
 import { supabase } from '../services/supabaseClient'
-
 /**
  * 🔹 REGISTRO INDIVIDUAL DE LAVAGEM
  */
@@ -197,7 +196,7 @@ export function Receita() {
           {[1, 7, 30, 60].map(p => (
             <button
               key={p}
-              className={periodo === p ? 'active' : ''}
+              className={`filtro-btn ${periodo === p ? 'active' : ''}`}
               onClick={() => setPeriodo(p as Periodo)}
             >
               {p === 1 ? 'Último dia' : `${p} dias`}
@@ -225,72 +224,130 @@ export function Receita() {
           </div>
 
           <button className="btn-apply" onClick={aplicarPeriodoManual}>
-            Aplicar
+            Aplicar Período
           </button>
         </div>
       </header>
 
       <main className="page-content">
         {loading ? (
-          <p className="loading">Carregando...</p>
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Carregando dados...</p>
+          </div>
         ) : dados.length === 0 ? (
-          <p className="empty-message">Nenhum dado no período</p>
+          <div className="empty-state">
+            <p className="empty-message">Nenhum dado encontrado no período</p>
+          </div>
         ) : (
           <div className="receita-cards-grid">
             {dados.map(lav => (
               <div key={lav.lavador_id} className="receita-card">
                 <div className="receita-card-header">
-                  <h3>{lav.lavador_nome}</h3>
+                  <h3 className="lavador-nome">{lav.lavador_nome}</h3>
                   <button
-                    className="btn-saida"
+                    className={`btn-saida ${expandedLavador === lav.lavador_id ? 'active' : ''}`}
                     onClick={() =>
                       setExpandedLavador(
                         expandedLavador === lav.lavador_id ? null : lav.lavador_id
                       )
                     }
                   >
-                    + Saída
+                    {expandedLavador === lav.lavador_id ? '✕ Fechar' : '+ Saída'}
                   </button>
                 </div>
 
                 <div className="receita-stats">
-                  <div>Serviços: {lav.total_lavagens}</div>
-                  <div>Total: R$ {lav.total_valor.toFixed(2)}</div>
-                  <div>Lavador: R$ {lav.valor_lavador.toFixed(2)}</div>
-                  <div>Empresa: R$ {lav.valor_empresa.toFixed(2)}</div>
+                  <div className="stat-item">
+                    <span className="stat-label">Serviços</span>
+                    <span className="stat-value">{lav.total_lavagens}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Total</span>
+                    <span className="stat-value">R$ {lav.total_valor.toFixed(2)}</span>
+                  </div>
+                  <div className="stat-item positivo">
+                    <span className="stat-label">Lavador</span>
+                    <span className="stat-value">R$ {lav.valor_lavador.toFixed(2)}</span>
+                  </div>
+                  <div className="stat-item empresa">
+                    <span className="stat-label">Empresa</span>
+                    <span className="stat-value">R$ {lav.valor_empresa.toFixed(2)}</span>
+                  </div>
                 </div>
 
                 {expandedLavador === lav.lavador_id && (
-                  <form
-                    onSubmit={e => {
-                      e.preventDefault()
-                      addSaida(lav.lavador_id)
-                    }}
-                  >
-                    <input
-                      placeholder="Descrição"
-                      value={saidaForm.descricao}
-                      onChange={e =>
-                        setSaidaForm({ ...saidaForm, descricao: e.target.value })
-                      }
-                    />
-                    <input
-                      type="number"
-                      placeholder="Valor"
-                      value={saidaForm.valor}
-                      onChange={e =>
-                        setSaidaForm({ ...saidaForm, valor: e.target.value })
-                      }
-                    />
-                    <input
-                      type="date"
-                      value={saidaForm.data}
-                      onChange={e =>
-                        setSaidaForm({ ...saidaForm, data: e.target.value })
-                      }
-                    />
-                    <button type="submit">Salvar</button>
-                  </form>
+                  <div className="receita-form-section">
+                    <h4>Registrar Saída</h4>
+                    <form
+                      className="receita-form"
+                      onSubmit={e => {
+                        e.preventDefault()
+                        addSaida(lav.lavador_id)
+                      }}
+                    >
+                      <div className="form-group">
+                        <label htmlFor="descricao">Descrição</label>
+                        <input
+                          id="descricao"
+                          type="text"
+                          placeholder="Ex: Combustível, Almoço..."
+                          value={saidaForm.descricao}
+                          onChange={e =>
+                            setSaidaForm({ ...saidaForm, descricao: e.target.value })
+                          }
+                          disabled={submitting}
+                        />
+                      </div>
+                      <div className="form-row">
+                        <div className="form-group">
+                          <label htmlFor="valor">Valor (R$)</label>
+                          <input
+                            id="valor"
+                            type="number"
+                            placeholder="0.00"
+                            value={saidaForm.valor}
+                            onChange={e =>
+                              setSaidaForm({ ...saidaForm, valor: e.target.value })
+                            }
+                            disabled={submitting}
+                            step="0.01"
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label htmlFor="data">Data</label>
+                          <input
+                            id="data"
+                            type="date"
+                            value={saidaForm.data}
+                            onChange={e =>
+                              setSaidaForm({ ...saidaForm, data: e.target.value })
+                            }
+                            disabled={submitting}
+                          />
+                        </div>
+                      </div>
+                      <div className="form-actions">
+                        <button
+                          type="submit"
+                          className="btn-submit"
+                          disabled={submitting || !saidaForm.descricao || !saidaForm.valor}
+                        >
+                          {submitting ? 'Salvando...' : 'Salvar Saída'}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn-cancel"
+                          onClick={() =>
+                            setExpandedLavador(null)
+                          }
+                          disabled={submitting}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 )}
               </div>
             ))}
