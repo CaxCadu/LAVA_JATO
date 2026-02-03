@@ -10,9 +10,9 @@ type Lavagem = {
   lavador_id: number
   valor: number
   created_at: string
-  lavadores: Array<{
+  lavadores: {
     nome: string
-  }>
+  }
 }
 
 /**
@@ -81,7 +81,7 @@ export function Receita() {
       if (!mapa.has(lav.lavador_id)) {
         mapa.set(lav.lavador_id, {
           lavador_id: lav.lavador_id,
-          lavador_nome: lav.lavadores[0]?.nome || 'Desconhecido',
+          lavador_nome: lav.lavadores.nome ?? 'Desconhecido',
           total_lavagens: 0,
           total_valor: 0,
           valor_lavador: 0,
@@ -118,7 +118,7 @@ export function Receita() {
         lavador_id,
         valor,
         created_at,
-        lavadores (
+        lavadores!inner(
           nome
         )
       `)
