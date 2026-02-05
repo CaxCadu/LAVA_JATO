@@ -306,3 +306,25 @@ form button:disabled {
 .search-input::placeholder {
   color: #999;
 }
+
+/* ==================== ANIVERSARIANTES ==================== */
+
+.cliente-card.aniversariante {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #fbbf24;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2), 0 4px 12px rgba(251, 191, 36, 0.3);
+}
+
+.cliente-card.aniversariante:hover {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2), 0 8px 24px rgba(245, 158, 11, 0.4);
+  transform: translateY(-4px);
+}
+
+.cliente-card.aniversariante::before {
+  content: '🎂';
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: block;
+  text-align: center;
+}

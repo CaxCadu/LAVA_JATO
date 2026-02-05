@@ -32,6 +32,25 @@ export function Clientes() {
   const [searchTerm, setSearchTerm] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null)
 
+  // Função para verificar se o cliente é aniversariante do mês atual
+  const isAniversariante = (dataNascimento?: string): boolean => {
+    if (!dataNascimento) return false
+    
+    const hoje = new Date()
+    const mesAtual = hoje.getMonth() + 1 // getMonth() retorna 0-11, então adiciona 1
+    const diaAtual = hoje.getDate()
+    
+    // Extrai mês e dia da data de nascimento (formato: YYYY-MM-DD)
+    const partesData = dataNascimento.split('-')
+    if (partesData.length !== 3) return false
+    
+    const mesNascimento = parseInt(partesData[1], 10)
+    const diaNascimento = parseInt(partesData[2], 10)
+    
+    // Retorna true se mês são iguais
+    return mesNascimento === mesAtual
+  }
+
   const [formData, setFormData] = useState<FormData>({
     nome: '',
     telefone: '',
@@ -314,8 +333,17 @@ export function Clientes() {
                     cliente.placa.toUpperCase().includes(searchTerm.toUpperCase()) ||
                     cliente.categoria.toLowerCase().includes(searchTerm.toLowerCase())
                   )
+                  .sort((a, b) => {
+                    // Aniversariantes vêm primeiro
+                    const aAniversario = isAniversariante(a.data_nascimento) ? 1 : 0
+                    const bAniversario = isAniversariante(b.data_nascimento) ? 1 : 0
+                    return bAniversario - aAniversario
+                  })
                   .map(cliente => (
-                  <div key={cliente.id} className="cliente-card">
+                  <div 
+                    key={cliente.id} 
+                    className={`cliente-card ${isAniversariante(cliente.data_nascimento) ? 'aniversariante' : ''}`}
+                  >
                     <div className="cliente-info">
                       <h3>{cliente.nome}</h3>
                       <p><strong>Telefone:</strong> {cliente.telefone}</p>
