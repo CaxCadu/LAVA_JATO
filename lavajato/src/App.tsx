@@ -6,7 +6,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import { FaHome } from 'react-icons/fa'
 import { VscAccount } from 'react-icons/vsc'
 import { GrCar, GrGroup, GrLineChart } from 'react-icons/gr'
-import { MdLocalCarWash, MdAdd, MdCheckCircle, MdDelete } from 'react-icons/md'
+import { MdLocalCarWash, MdAdd, MdCheckCircle, MdDelete, MdPendingActions } from 'react-icons/md'
 import { supabase } from './services/supabaseClient'
 import { Lavadores } from './pages/lavadores'
 import { Clientes } from './pages/clientes'
@@ -14,6 +14,7 @@ import { Estacionamento } from './pages/estacionamento'
 import { Receita } from './pages/receita'
 import { Lavagem } from './pages/lavagem'
 import { Fechamento } from './pages/fechamento'
+import { Pendentes } from './pages/pendentes'
 import { SaidaModal } from './components/SaidaModal'
 
 /* ==================== TIPOS ==================== */
@@ -35,6 +36,12 @@ type ServicoResumo = {
   valor: number
 }
 
+type MediaServicos = {
+  mediaLavagem: number
+  mediaEstacionamento: number
+  mediaCombinada: number
+}
+
 /* ==================== COMPONENTE PRINCIPAL ==================== */
 function App() {
   // Estados de Receita
@@ -53,6 +60,11 @@ function App() {
   const [lavagensDia, setLavagensDia] = useState<ServicoResumo>({ quantidade: 0, valor: 0 })
   const [estacionamentoDia, setEstacionamentoDia] = useState<ServicoResumo>({ quantidade: 0, valor: 0 })
   const [despesas, setDespesas] = useState<Despesa[]>([])
+  const [mediaServicos, setMediaServicos] = useState<MediaServicos>({
+    mediaLavagem: 0,
+    mediaEstacionamento: 0,
+    mediaCombinada: 0
+  })
 
   // Estados de UI
   const [showSaidaModal, setShowSaidaModal] = useState(false)
@@ -240,6 +252,19 @@ function App() {
         setEstacionamentoDia(estacionamento)
         setDespesas(despesasDetalhadas || [])
 
+        // Calcular médias dos serviços
+        const mediaLavagem = lavagens.quantidade > 0 ? lavagens.valor / lavagens.quantidade : 0
+        const mediaEstacionamento = estacionamento.quantidade > 0 ? estacionamento.valor / estacionamento.quantidade : 0
+        const quantidadeTotal = lavagens.quantidade + estacionamento.quantidade
+        const valorTotal = lavagens.valor + estacionamento.valor
+        const mediaCombinada = quantidadeTotal > 0 ? valorTotal / quantidadeTotal : 0
+
+        setMediaServicos({
+          mediaLavagem,
+          mediaEstacionamento,
+          mediaCombinada
+        })
+
         // Calcular receita do dia com despesas do dia
         const totalEntradas = lavagens.valor + estacionamento.valor
         setReceitaDia({
@@ -291,13 +316,17 @@ function App() {
             <GrCar />
             <span>Estacionamento</span>
           </Link>
-          <Link to="/receita" className={`nav-link ${location.pathname === '/receita' ? 'active' : ''}`} title="Receita">
-            <GrLineChart />
-            <span>Receita</span>
-          </Link>
           <Link to="/lavagem" className={`nav-link ${location.pathname === '/lavagem' ? 'active' : ''}`} title="Lavagem">
             <MdLocalCarWash />
             <span>Lavagem</span>
+          </Link>
+          <Link to="/pendentes" className={`nav-link ${location.pathname === '/pendentes' ? 'active' : ''}`} title="Pendentes">
+            <MdPendingActions />
+            <span>Pendentes</span>
+          </Link>
+          <Link to="/receita" className={`nav-link ${location.pathname === '/receita' ? 'active' : ''}`} title="Receita">
+            <GrLineChart />
+            <span>Receita</span>
           </Link>
           <Link to="/fechamento" className={`nav-link ${location.pathname === '/fechamento' ? 'active' : ''}`} title="Fechamento">
             <MdCheckCircle />
@@ -314,6 +343,7 @@ function App() {
           <Route path="/estacionamento" element={<Estacionamento />} />
           <Route path="/receita" element={<Receita />} />
           <Route path="/lavagem" element={<Lavagem />} />
+          <Route path="/pendentes" element={<Pendentes />} />
           <Route path="/fechamento" element={<Fechamento />} />
           <Route 
             path="/" 
@@ -324,6 +354,7 @@ function App() {
                 lavagensDia={lavagensDia}
                 estacionamentoDia={estacionamentoDia}
                 despesas={despesas}
+                mediaServicos={mediaServicos}
                 loading={loading}
                 error={error}
                 dataInicio={dataInicio}
@@ -354,6 +385,7 @@ function App() {
     lavagensDia,
     estacionamentoDia,
     despesas,
+    mediaServicos,
     loading,
     error,
     dataInicio,
@@ -368,6 +400,7 @@ function App() {
     lavagensDia: ServicoResumo
     estacionamentoDia: ServicoResumo
     despesas: Despesa[]
+    mediaServicos: MediaServicos
     loading: boolean
     error: string | null
     dataInicio: string
@@ -450,6 +483,13 @@ function App() {
             <section className="card-container">
               <CardServico titulo="Lavagens - Dia" servico={lavagensDia} />
               <CardServico titulo="Estacionamento - Dia" servico={estacionamentoDia} />
+            </section>
+
+            {/* Médias dos Serviços */}
+            <section className="card-container">
+              <CardMedia titulo="Média Lavagens" media={mediaServicos.mediaLavagem} />
+              <CardMedia titulo="Média Estacionamento" media={mediaServicos.mediaEstacionamento} />
+              <CardMedia titulo="Média Combinada" media={mediaServicos.mediaCombinada} />
             </section>
 
             {/* Resumo Geral */}
@@ -566,6 +606,22 @@ function CardServico({ titulo, servico }: { titulo: string; servico: ServicoResu
         <div className="metric total">
           <span className="metric-label">Valor</span>
           <span className="metric-value highlight">R$ {servico.valor.toFixed(2)}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CardMedia({ titulo, media }: { titulo: string; media: number }) {
+  return (
+    <div className="card receita-card">
+      <div className="card-header">
+        <h2>{titulo}</h2>
+      </div>
+      <div className="card-content">
+        <div className="metric total">
+          <span className="metric-label">Média por Serviço</span>
+          <span className="metric-value highlight">R$ {media.toFixed(2)}</span>
         </div>
       </div>
     </div>
