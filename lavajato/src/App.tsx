@@ -65,6 +65,7 @@ function App() {
     mediaEstacionamento: 0,
     mediaCombinada: 0
   })
+  const [media7Dias, setMedia7Dias] = useState<number>(0)
 
   // Estados de UI
   const [showSaidaModal, setShowSaidaModal] = useState(false)
@@ -101,6 +102,15 @@ function App() {
     lastDay.setHours(23, 59, 59, 999)
 
     return { firstDay, lastDay }
+  }
+
+  const obterIntervaloUltimos7Dias = () => {
+    const end = new Date()
+    end.setHours(23, 59, 59, 999)
+    const start = new Date(end)
+    start.setDate(start.getDate() - 6) // últimos 7 dias incluindo hoje
+    start.setHours(0, 0, 0, 0)
+    return { start, end }
   }
 
   /* ==================== FETCH DE DADOS ==================== */
@@ -204,6 +214,41 @@ function App() {
     return { entradas, saidas, lucro }
   }
 
+  const buscarReceitaUltimos7Dias = async () => {
+    const { start, end } = obterIntervaloUltimos7Dias()
+
+    const { data: lavagens, error: errLavagens } = await supabase
+      .from('lavagens')
+      .select('valor')
+      .gte('created_at', start.toISOString())
+      .lte('created_at', end.toISOString())
+
+    const { data: estacionamento, error: errEst } = await supabase
+      .from('estacionamento')
+      .select('valor')
+      .gte('created_at', start.toISOString())
+      .lte('created_at', end.toISOString())
+
+    const { data: despesas, error: errDesp } = await supabase
+      .from('despesas')
+      .select('valor')
+      .gte('created_at', start.toISOString())
+      .lte('created_at', end.toISOString())
+
+    if (errLavagens || errEst || errDesp) {
+      console.error('Erro ao buscar receita últimos 7 dias')
+      return 0
+    }
+
+    const entradas = (lavagens?.reduce((sum, l) => sum + (l.valor || 0), 0) || 0) +
+                    (estacionamento?.reduce((sum, e) => sum + (e.valor || 0), 0) || 0)
+    const saidas = despesas?.reduce((sum, d) => sum + (d.valor || 0), 0) || 0
+    const lucroTotal = entradas - saidas
+
+    const mediaDiaria = lucroTotal / 7
+    return mediaDiaria
+  }
+
   const deletarSaida = async (id: string) => {
     if (!window.confirm('Tem certeza que deseja deletar esta saída?')) {
       return
@@ -240,12 +285,13 @@ function App() {
         const { diaInicio, diaFim } = obterIntervaloDias()
 
         // Buscar dados do dia selecionado
-        const [lavagens, estacionamento, receita_mes, despesas_valor, despesasDetalhadas] = await Promise.all([
+        const [lavagens, estacionamento, receita_mes, despesas_valor, despesasDetalhadas, media7] = await Promise.all([
           buscarLavagensNoDia(diaInicio, diaFim),
           buscarEstacionamentoNoDia(diaInicio, diaFim),
           buscarReceitaMes(),
           buscarDespesasNoDia(diaInicio, diaFim),
-          buscarDespesasDetalhadasNoDia(diaInicio, diaFim)
+          buscarDespesasDetalhadasNoDia(diaInicio, diaFim),
+          buscarReceitaUltimos7Dias()
         ])
 
         setLavagensDia(lavagens)
@@ -275,6 +321,8 @@ function App() {
 
         // Definir dados do mês
         setReceitaMes(receita_mes)
+        // Definir média últimos 7 dias
+        setMedia7Dias(media7)
       } catch (error) {
         console.error('Erro ao buscar dados:', error)
         setError('Erro ao carregar dados. Tente novamente.')
@@ -355,6 +403,7 @@ function App() {
                 estacionamentoDia={estacionamentoDia}
                 despesas={despesas}
                 mediaServicos={mediaServicos}
+                    media7Dias={media7Dias}
                 loading={loading}
                 error={error}
                 dataInicio={dataInicio}
@@ -386,6 +435,7 @@ function App() {
     estacionamentoDia,
     despesas,
     mediaServicos,
+    media7Dias,
     loading,
     error,
     dataInicio,
@@ -401,6 +451,7 @@ function App() {
     estacionamentoDia: ServicoResumo
     despesas: Despesa[]
     mediaServicos: MediaServicos
+    media7Dias: number
     loading: boolean
     error: string | null
     dataInicio: string
@@ -490,6 +541,7 @@ function App() {
               <CardMedia titulo="Média Lavagens" media={mediaServicos.mediaLavagem} />
               <CardMedia titulo="Média Estacionamento" media={mediaServicos.mediaEstacionamento} />
               <CardMedia titulo="Média Combinada" media={mediaServicos.mediaCombinada} />
+              <CardMedia titulo="Média 7 Dias" media={media7Dias} />
             </section>
 
             {/* Resumo Geral */}
